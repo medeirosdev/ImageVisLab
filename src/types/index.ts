@@ -64,19 +64,38 @@ export interface FilterParams {
     quantizationLevels: number;
     /** Block size for spatial subsampling (1-32) */
     samplingFactor: number;
+    /** Kernel size for convolution filters (3, 5, or 7) */
+    kernelSize: number;
+    /** Sigma for Gaussian blur */
+    gaussianSigma: number;
+    /** Threshold for binarization (0-255) */
+    threshold: number;
 }
 
 /**
  * Available filter types in the application.
  */
 export type FilterType =
+    // No filter
     | 'none'
+    // Point Operations
     | 'negative'
     | 'gamma'
     | 'log'
     | 'quantization'
     | 'sampling'
-    | 'equalization';
+    | 'equalization'
+    // Spatial Filters (Convolution)
+    | 'boxBlur'
+    | 'gaussianBlur'
+    | 'sharpen'
+    | 'laplacian'
+    // Morphology Operations
+    | 'threshold'
+    | 'erosion'
+    | 'dilation'
+    | 'opening'
+    | 'closing';
 
 // =============================================================================
 // Application State Types
