@@ -22,7 +22,7 @@ interface SidebarProps {
     activeFilter: FilterType;
     filterParams: FilterParams;
     onFilterChange: (filter: FilterType) => void;
-    onParamChange: (param: keyof FilterParams, value: number) => void;
+    onParamChange: (param: keyof FilterParams, value: number | string | number[][]) => void;
     onLoadImage: () => void;
     onLoadSample: (type: 'gradient' | 'checkerboard' | 'noise') => void;
     onDownload: () => void;
@@ -207,6 +207,24 @@ const FILTER_CATEGORIES: FilterCategory[] = [
             },
         ],
     },
+    {
+        id: 'custom',
+        name: 'Custom Operations',
+        filters: [
+            {
+                id: 'customFormula',
+                name: 'Custom Formula',
+                description: 'Apply your own formula',
+                formula: 's = f(r, g, b, x, y)',
+            },
+            {
+                id: 'customKernel',
+                name: 'Custom Kernel',
+                description: 'Apply your own convolution matrix',
+                formula: 'g = f * h',
+            },
+        ],
+    },
 ];
 
 // =============================================================================
@@ -369,23 +387,86 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                         {/* Parameters */}
                                         {filter.params && activeFilter === filter.id && (
                                             <div className="filter-params">
-                                                {filter.params.map((param) => (
-                                                    <div key={param.key} className="param-control">
-                                                        <label className="param-label">
-                                                            {param.label}: <span className="param-value">{filterParams[param.key]}</span>
-                                                        </label>
-                                                        <input
-                                                            type="range"
-                                                            className="param-slider"
-                                                            min={param.min}
-                                                            max={param.max}
-                                                            step={param.step}
-                                                            value={filterParams[param.key]}
-                                                            onChange={(e) => onParamChange(param.key, parseFloat(e.target.value))}
-                                                            title={`${param.label}: ${filterParams[param.key]}`}
-                                                        />
-                                                    </div>
-                                                ))}
+                                                {filter.params.map((param) => {
+                                                    const value = filterParams[param.key];
+                                                    // Only render slider for numeric values
+                                                    if (typeof value !== 'number') return null;
+                                                    return (
+                                                        <div key={param.key} className="param-control">
+                                                            <label className="param-label">
+                                                                {param.label}: <span className="param-value">{value}</span>
+                                                            </label>
+                                                            <input
+                                                                type="range"
+                                                                className="param-slider"
+                                                                min={param.min}
+                                                                max={param.max}
+                                                                step={param.step}
+                                                                value={value}
+                                                                onChange={(e) => onParamChange(param.key, parseFloat(e.target.value))}
+                                                                title={`${param.label}: ${value}`}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* Custom Formula Editor */}
+                                        {filter.id === 'customFormula' && activeFilter === 'customFormula' && (
+                                            <div className="custom-editor">
+                                                <label className="editor-label">Formula:</label>
+                                                <input
+                                                    type="text"
+                                                    className="formula-input"
+                                                    value={filterParams.customFormula}
+                                                    onChange={(e) => onParamChange('customFormula', e.target.value)}
+                                                    placeholder="255 - r"
+                                                />
+                                                <div className="formula-help">
+                                                    <small>Variables: r, g, b (pixel values), x, y (position), w, h (size)</small>
+                                                    <small>Functions: sin, cos, sqrt, abs, min, max, floor, ceil</small>
+                                                </div>
+                                                <div className="formula-presets">
+                                                    <button onClick={() => onParamChange('customFormula', '255 - r')}>Negative</button>
+                                                    <button onClick={() => onParamChange('customFormula', '(r + g + b) / 3')}>Grayscale</button>
+                                                    <button onClick={() => onParamChange('customFormula', 'r > 128 ? 255 : 0')}>Threshold</button>
+                                                    <button onClick={() => onParamChange('customFormula', 'r * 1.5')}>Brighten</button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Custom Kernel Editor */}
+                                        {filter.id === 'customKernel' && activeFilter === 'customKernel' && (
+                                            <div className="custom-editor">
+                                                <label className="editor-label">Kernel (3x3):</label>
+                                                <div className="kernel-grid">
+                                                    {filterParams.customKernel.map((row, y) => (
+                                                        <div key={y} className="kernel-row">
+                                                            {row.map((val, x) => (
+                                                                <input
+                                                                    key={x}
+                                                                    type="number"
+                                                                    className="kernel-cell"
+                                                                    value={val}
+                                                                    onChange={(e) => {
+                                                                        const newKernel = filterParams.customKernel.map((r, ry) =>
+                                                                            r.map((v, rx) => (ry === y && rx === x ? parseFloat(e.target.value) || 0 : v))
+                                                                        );
+                                                                        onParamChange('customKernel', newKernel);
+                                                                    }}
+                                                                    step="0.1"
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="kernel-presets">
+                                                    <button onClick={() => onParamChange('customKernel', [[0, 0, 0], [0, 1, 0], [0, 0, 0]])}>Identity</button>
+                                                    <button onClick={() => onParamChange('customKernel', [[0, -1, 0], [-1, 5, -1], [0, -1, 0]])}>Sharpen</button>
+                                                    <button onClick={() => onParamChange('customKernel', [[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])}>Edge</button>
+                                                    <button onClick={() => onParamChange('customKernel', [[1 / 9, 1 / 9, 1 / 9], [1 / 9, 1 / 9, 1 / 9], [1 / 9, 1 / 9, 1 / 9]])}>Blur</button>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

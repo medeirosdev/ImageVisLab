@@ -37,6 +37,10 @@ import {
   applyOpening,
   applyClosing,
 } from './utils/morphology';
+import {
+  applyCustomFormula,
+  applyCustomKernel,
+} from './utils/customFilters';
 import './App.css';
 
 // =============================================================================
@@ -53,6 +57,13 @@ const DEFAULT_FILTER_PARAMS: FilterParams = {
   kernelSize: 3,
   gaussianSigma: 1.0,
   threshold: 128,
+  customFormula: '255 - r',
+  customKernel: [
+    [0, -1, 0],
+    [-1, 5, -1],
+    [0, -1, 0],
+  ],
+  customKernelSize: 3,
 };
 
 // =============================================================================
@@ -172,6 +183,13 @@ function App() {
         break;
       case 'closing':
         result = applyClosing(applyThreshold(originalImage, filterParams.threshold));
+        break;
+      // Custom Operations
+      case 'customFormula':
+        result = applyCustomFormula(originalImage, filterParams.customFormula);
+        break;
+      case 'customKernel':
+        result = applyCustomKernel(originalImage, filterParams.customKernel);
         break;
       case 'none':
       default:
@@ -444,7 +462,7 @@ function App() {
   }, [history, filterParams]);
 
   /** Updates a specific filter parameter */
-  const handleParamChange = useCallback((param: keyof FilterParams, value: number) => {
+  const handleParamChange = useCallback((param: keyof FilterParams, value: number | string | number[][]) => {
     setFilterParams(prev => {
       const newParams = { ...prev, [param]: value };
       if (!isRestoringRef.current) {

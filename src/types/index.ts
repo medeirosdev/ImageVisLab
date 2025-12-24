@@ -70,6 +70,12 @@ export interface FilterParams {
     gaussianSigma: number;
     /** Threshold for binarization (0-255) */
     threshold: number;
+    /** Custom formula string (e.g., "255 - r") */
+    customFormula: string;
+    /** Custom convolution kernel */
+    customKernel: number[][];
+    /** Custom kernel size (3, 5, or 7) */
+    customKernelSize: number;
 }
 
 /**
@@ -95,7 +101,10 @@ export type FilterType =
     | 'erosion'
     | 'dilation'
     | 'opening'
-    | 'closing';
+    | 'closing'
+    // Custom Operations
+    | 'customFormula'
+    | 'customKernel';
 
 // =============================================================================
 // Application State Types

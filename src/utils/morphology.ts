@@ -45,15 +45,6 @@ export function applyThreshold(imageData: ImageData, threshold: number): ImageDa
 // =============================================================================
 
 /**
- * 3x3 cross structuring element (4-connected).
- */
-const CROSS_ELEMENT = [
-    [0, 1, 0],
-    [1, 1, 1],
-    [0, 1, 0],
-];
-
-/**
  * 3x3 square structuring element (8-connected).
  */
 const SQUARE_ELEMENT = [

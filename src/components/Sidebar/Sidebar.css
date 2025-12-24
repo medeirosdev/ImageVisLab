@@ -391,6 +391,119 @@
 }
 
 /* =============================================================================
+   Custom Formula & Kernel Editors
+   ============================================================================= */
+
+.custom-editor {
+    padding: var(--space-sm);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-sm);
+    margin-top: var(--space-sm);
+}
+
+.editor-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.formula-input {
+    width: 100%;
+    padding: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+}
+
+.formula-input:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+}
+
+.formula-help {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: var(--space-xs);
+    color: var(--color-text-muted);
+    font-size: 0.625rem;
+}
+
+.formula-presets,
+.kernel-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-sm);
+}
+
+.formula-presets button,
+.kernel-presets button {
+    padding: 4px 8px;
+    font-size: 0.625rem;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.formula-presets button:hover,
+.kernel-presets button:hover {
+    background: var(--color-accent-primary);
+    color: white;
+    border-color: var(--color-accent-primary);
+}
+
+.kernel-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: var(--space-sm);
+}
+
+.kernel-row {
+    display: flex;
+    gap: 4px;
+}
+
+.kernel-cell {
+    width: 48px;
+    padding: 6px 4px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+}
+
+.kernel-cell:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+}
+
+/* Hide number input spinners */
+.kernel-cell::-webkit-outer-spin-button,
+.kernel-cell::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.kernel-cell[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* =============================================================================
    Footer
    ============================================================================= */
 
