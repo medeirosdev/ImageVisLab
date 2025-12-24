@@ -132,6 +132,114 @@ const getFormulaInfo = (
                 ],
             };
 
+        // Spatial Filters (Convolution)
+        case 'boxBlur':
+            return {
+                name: 'Box Blur (Mean Filter)',
+                latex: 'g(x,y) = \\frac{1}{n^2} \\sum_{i,j} f(x+i, y+j)',
+                description: 'Averages all pixels in the neighborhood. Simple smoothing filter.',
+                variables: [
+                    { symbol: 'g', meaning: 'Output pixel' },
+                    { symbol: 'f', meaning: 'Input pixel' },
+                    { symbol: 'n', meaning: 'Kernel size', value: params.kernelSize },
+                ],
+            };
+
+        case 'gaussianBlur':
+            return {
+                name: 'Gaussian Blur',
+                latex: 'G(x,y) = \\frac{1}{2\\pi\\sigma^2} e^{-\\frac{x^2+y^2}{2\\sigma^2}}',
+                description: 'Weighted smoothing using Gaussian distribution. Preserves edges better than box blur.',
+                variables: [
+                    { symbol: 'G', meaning: 'Gaussian weight' },
+                    { symbol: '\\sigma', meaning: 'Standard deviation', value: params.gaussianSigma },
+                    { symbol: 'n', meaning: 'Kernel size', value: params.kernelSize },
+                ],
+            };
+
+        case 'sharpen':
+            return {
+                name: 'Sharpening Filter',
+                latex: 's = f + k(f - \\bar{f})',
+                description: 'Enhances edges and fine details by amplifying high-frequency components.',
+                variables: [
+                    { symbol: 's', meaning: 'Sharpened pixel' },
+                    { symbol: 'f', meaning: 'Original pixel' },
+                    { symbol: '\\bar{f}', meaning: 'Blurred pixel' },
+                ],
+            };
+
+        case 'laplacian':
+            return {
+                name: 'Laplacian (Edge Detection)',
+                latex: '\\nabla^2 f = \\frac{\\partial^2 f}{\\partial x^2} + \\frac{\\partial^2 f}{\\partial y^2}',
+                description: 'Second derivative operator. Detects edges by finding zero-crossings.',
+                variables: [
+                    { symbol: '\\nabla^2', meaning: 'Laplacian operator' },
+                    { symbol: 'f', meaning: 'Input intensity' },
+                ],
+            };
+
+        // Morphology Operations
+        case 'threshold':
+            return {
+                name: 'Binarization (Thresholding)',
+                latex: 's = \\begin{cases} 0 & r < T \\\\ 255 & r \\geq T \\end{cases}',
+                description: 'Converts grayscale to binary image. Pixels below threshold become black, above become white.',
+                variables: [
+                    { symbol: 's', meaning: 'Output (0 or 255)' },
+                    { symbol: 'T', meaning: 'Threshold', value: params.threshold },
+                ],
+            };
+
+        case 'erosion':
+            return {
+                name: 'Morphological Erosion',
+                latex: 'A \\ominus B = \\{ z | B_z \\subseteq A \\}',
+                description: 'Shrinks white regions. Useful for removing small white noise.',
+                variables: [
+                    { symbol: 'A', meaning: 'Binary image' },
+                    { symbol: 'B', meaning: 'Structuring element (3×3)' },
+                    { symbol: 'T', meaning: 'Threshold', value: params.threshold },
+                ],
+            };
+
+        case 'dilation':
+            return {
+                name: 'Morphological Dilation',
+                latex: 'A \\oplus B = \\{ z | (\\hat{B})_z \\cap A \\neq \\emptyset \\}',
+                description: 'Expands white regions. Useful for filling small black holes.',
+                variables: [
+                    { symbol: 'A', meaning: 'Binary image' },
+                    { symbol: 'B', meaning: 'Structuring element (3×3)' },
+                    { symbol: 'T', meaning: 'Threshold', value: params.threshold },
+                ],
+            };
+
+        case 'opening':
+            return {
+                name: 'Morphological Opening',
+                latex: 'A \\circ B = (A \\ominus B) \\oplus B',
+                description: 'Erosion followed by dilation. Removes small white objects.',
+                variables: [
+                    { symbol: 'A', meaning: 'Binary image' },
+                    { symbol: 'B', meaning: 'Structuring element' },
+                    { symbol: 'T', meaning: 'Threshold', value: params.threshold },
+                ],
+            };
+
+        case 'closing':
+            return {
+                name: 'Morphological Closing',
+                latex: 'A \\bullet B = (A \\oplus B) \\ominus B',
+                description: 'Dilation followed by erosion. Fills small black holes.',
+                variables: [
+                    { symbol: 'A', meaning: 'Binary image' },
+                    { symbol: 'B', meaning: 'Structuring element' },
+                    { symbol: 'T', meaning: 'Threshold', value: params.threshold },
+                ],
+            };
+
         case 'none':
         default:
             return {
