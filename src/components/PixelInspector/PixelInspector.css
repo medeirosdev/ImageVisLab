@@ -1,0 +1,236 @@
+/**
+ * ImageVisLab - PixelInspector Styles
+ * 
+ * Styles for the pixel inspector panel including
+ * magnifier grid, pixel info, and RGB channel bars.
+ * 
+ * @author ImageVisLab Contributors
+ * @license MIT
+ */
+
+/* =============================================================================
+   Inspector Container
+   ============================================================================= */
+
+.pixel-inspector {
+    display: flex;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    height: var(--inspector-height);
+    overflow: hidden;
+}
+
+.pixel-inspector.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =============================================================================
+   Empty State
+   ============================================================================= */
+
+.inspector-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    color: var(--color-text-muted);
+}
+
+.inspector-placeholder svg {
+    opacity: 0.5;
+}
+
+.inspector-placeholder p {
+    font-size: 0.875rem;
+}
+
+/* =============================================================================
+   Section Titles
+   ============================================================================= */
+
+.inspector-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-md);
+}
+
+/* =============================================================================
+   Magnifier Grid
+   ============================================================================= */
+
+.inspector-magnifier {
+    flex-shrink: 0;
+}
+
+.magnifier-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 1px;
+    padding: 4px;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.magnifier-pixel {
+    width: 18px;
+    height: 18px;
+    transition: transform var(--transition-fast);
+}
+
+.magnifier-pixel.center {
+    outline: 2px solid var(--color-accent-primary);
+    outline-offset: -1px;
+    z-index: 1;
+}
+
+.magnifier-pixel:hover {
+    transform: scale(1.3);
+    z-index: 2;
+}
+
+/* =============================================================================
+   Pixel Information Panel
+   ============================================================================= */
+
+.inspector-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.info-grid {
+    display: flex;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.info-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.info-value {
+    font-size: 0.9375rem;
+    color: var(--color-text-primary);
+}
+
+/* =============================================================================
+   Color Preview
+   ============================================================================= */
+
+.color-preview-container {
+    flex: 1;
+}
+
+.color-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    min-width: 100px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.hex-value {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+/* =============================================================================
+   RGB Channel Bars
+   ============================================================================= */
+
+.channels-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.channel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.channel-label {
+    width: 36px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.channel-r .channel-label {
+    color: var(--color-channel-r);
+}
+
+.channel-g .channel-label {
+    color: var(--color-channel-g);
+}
+
+.channel-b .channel-label {
+    color: var(--color-channel-b);
+}
+
+.channel-gray .channel-label {
+    color: var(--color-text-muted);
+}
+
+.channel-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.channel-fill {
+    height: 100%;
+    transition: width var(--transition-fast);
+}
+
+.channel-r .channel-fill {
+    background: var(--color-channel-r);
+}
+
+.channel-g .channel-fill {
+    background: var(--color-channel-g);
+}
+
+.channel-b .channel-fill {
+    background: var(--color-channel-b);
+}
+
+.channel-gray .channel-fill {
+    background: linear-gradient(90deg, #333 0%, #fff 100%);
+}
+
+.channel-value {
+    width: 32px;
+    font-size: 0.8125rem;
+    text-align: right;
+    color: var(--color-text-secondary);
+}
