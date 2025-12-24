@@ -351,3 +351,104 @@ export function getNeighborhood(
 
     return neighborhood;
 }
+
+// =============================================================================
+// Distance Metrics
+// =============================================================================
+
+import type { DistanceMetric, NeighborType } from '../types';
+
+/**
+ * Calculates the distance between two points using the specified metric.
+ * 
+ * - Euclidean: sqrt((x1-x2)² + (y1-y2)²)
+ * - City-block (D4): |x1-x2| + |y1-y2|
+ * - Chessboard (D8): max(|x1-x2|, |y1-y2|)
+ * 
+ * @param x1 - X coordinate of first point
+ * @param y1 - Y coordinate of first point
+ * @param x2 - X coordinate of second point
+ * @param y2 - Y coordinate of second point
+ * @param metric - Distance metric to use
+ * @returns The calculated distance
+ */
+export function calculateDistance(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    metric: DistanceMetric
+): number {
+    const dx = Math.abs(x1 - x2);
+    const dy = Math.abs(y1 - y2);
+
+    switch (metric) {
+        case 'euclidean':
+            return Math.sqrt(dx * dx + dy * dy);
+        case 'cityBlock':
+            return dx + dy;
+        case 'chessboard':
+            return Math.max(dx, dy);
+        default:
+            return Math.sqrt(dx * dx + dy * dy);
+    }
+}
+
+/**
+ * Checks if a relative position is part of a specific neighborhood type.
+ * 
+ * - N4: 4-connected (up, down, left, right)
+ * - ND: Diagonal neighbors only
+ * - N8: 8-connected (all 8 surrounding pixels)
+ * 
+ * @param dx - Relative X offset from center (-1, 0, or 1)
+ * @param dy - Relative Y offset from center (-1, 0, or 1)
+ * @param neighborType - Type of neighborhood to check
+ * @returns True if the position is part of the neighborhood
+ */
+export function isInNeighborhood(
+    dx: number,
+    dy: number,
+    neighborType: NeighborType
+): boolean {
+    // Center pixel is not part of neighborhood
+    if (dx === 0 && dy === 0) return false;
+
+    // Only consider immediate neighbors (distance 1)
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return false;
+
+    switch (neighborType) {
+        case 'N4':
+            // 4-connected: only horizontal and vertical
+            return (dx === 0 || dy === 0);
+        case 'ND':
+            // Diagonal only
+            return (dx !== 0 && dy !== 0);
+        case 'N8':
+            // 8-connected: all surrounding
+            return true;
+        default:
+            return false;
+    }
+}
+
+/**
+ * Gets all valid neighbor positions for a given neighborhood type.
+ * 
+ * @param neighborType - Type of neighborhood
+ * @returns Array of {dx, dy} offsets
+ */
+export function getNeighborOffsets(neighborType: NeighborType): Array<{ dx: number; dy: number }> {
+    const offsets: Array<{ dx: number; dy: number }> = [];
+
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            if (isInNeighborhood(dx, dy, neighborType)) {
+                offsets.push({ dx, dy });
+            }
+        }
+    }
+
+    return offsets;
+}
+
