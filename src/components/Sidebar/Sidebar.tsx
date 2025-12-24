@@ -29,6 +29,8 @@ interface SidebarProps {
     onParamChange: (param: keyof FilterParams, value: number) => void;
     /** Callback to trigger image loading */
     onLoadImage: () => void;
+    /** Callback to download processed image */
+    onDownload: () => void;
     /** Callback to reset all filters */
     onReset: () => void;
     /** Whether an image is currently loaded */
@@ -124,6 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onFilterChange,
     onParamChange,
     onLoadImage,
+    onDownload,
     onReset,
     hasImage,
 }) => {
@@ -159,6 +162,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <path d="M3 3v5h5" />
                         </svg>
                         Reset
+                    </button>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={onDownload}
+                        disabled={!hasImage}
+                        title="Download processed image"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7,10 12,15 17,10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Save
                     </button>
                 </div>
             </div>

@@ -344,6 +344,27 @@ function App() {
     setFilterParams(DEFAULT_FILTER_PARAMS);
   }, []);
 
+  /** Downloads the processed image as PNG */
+  const handleDownload = useCallback(() => {
+    const imageToDownload = animatedImage || processedImage;
+    if (!imageToDownload) return;
+
+    // Create canvas with processed image
+    const canvas = document.createElement('canvas');
+    canvas.width = imageToDownload.width;
+    canvas.height = imageToDownload.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.putImageData(imageToDownload, 0, 0);
+
+    // Create download link
+    const link = document.createElement('a');
+    link.download = `${imageFileName.replace(/\.[^/.]+$/, '')}_processed.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }, [animatedImage, processedImage, imageFileName]);
+
   // ---------------------------------------------------------------------------
   // Handlers: Pixel Inspector
   // ---------------------------------------------------------------------------
@@ -434,6 +455,7 @@ function App() {
         onFilterChange={handleFilterChange}
         onParamChange={handleParamChange}
         onLoadImage={handleLoadImage}
+        onDownload={handleDownload}
         onReset={handleReset}
         hasImage={!!originalImage}
       />
