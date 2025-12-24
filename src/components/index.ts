@@ -13,3 +13,4 @@ export { Sidebar } from './Sidebar';
 export { PixelInspector } from './PixelInspector';
 export { Histogram } from './Histogram';
 export { FormulaPanel } from './FormulaPanel';
+export { LaTeXFormula } from './LaTeXFormula';
