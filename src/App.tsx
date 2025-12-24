@@ -11,6 +11,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel } from './components';
+import { useHistory } from './hooks';
 import type { FilterType, FilterParams } from './types';
 import {
   applyNegative,
@@ -72,6 +73,12 @@ function App() {
   // ---------------------------------------------------------------------------
   const [activeFilter, setActiveFilter] = useState<FilterType>('none');
   const [filterParams, setFilterParams] = useState<FilterParams>(DEFAULT_FILTER_PARAMS);
+
+  // ---------------------------------------------------------------------------
+  // History (Undo/Redo)
+  // ---------------------------------------------------------------------------
+  const history = useHistory();
+  const isRestoringRef = useRef(false);
 
   // ---------------------------------------------------------------------------
   // State: Pixel Inspector
@@ -361,24 +368,91 @@ function App() {
   }, [handleResetAnimation]);
 
   // ---------------------------------------------------------------------------
+  // Effect: Keyboard Shortcuts (Ctrl+Z / Ctrl+Y)
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          const state = history.undo();
+          if (state) {
+            isRestoringRef.current = true;
+            setActiveFilter(state.activeFilter);
+            setFilterParams(state.filterParams);
+            isRestoringRef.current = false;
+          }
+        } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+          e.preventDefault();
+          const state = history.redo();
+          if (state) {
+            isRestoringRef.current = true;
+            setActiveFilter(state.activeFilter);
+            setFilterParams(state.filterParams);
+            isRestoringRef.current = false;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [history]);
+
+  // ---------------------------------------------------------------------------
   // Handlers: Filter Controls
   // ---------------------------------------------------------------------------
 
   /** Changes the active filter type */
   const handleFilterChange = useCallback((filter: FilterType) => {
+    if (!isRestoringRef.current) {
+      history.push({ activeFilter: filter, filterParams });
+    }
     setActiveFilter(filter);
-  }, []);
+  }, [history, filterParams]);
 
   /** Updates a specific filter parameter */
   const handleParamChange = useCallback((param: keyof FilterParams, value: number) => {
-    setFilterParams(prev => ({ ...prev, [param]: value }));
-  }, []);
+    setFilterParams(prev => {
+      const newParams = { ...prev, [param]: value };
+      if (!isRestoringRef.current) {
+        history.push({ activeFilter, filterParams: newParams });
+      }
+      return newParams;
+    });
+  }, [history, activeFilter]);
 
   /** Resets all filters to default */
   const handleReset = useCallback(() => {
+    if (!isRestoringRef.current) {
+      history.push({ activeFilter: 'none', filterParams: DEFAULT_FILTER_PARAMS });
+    }
     setActiveFilter('none');
     setFilterParams(DEFAULT_FILTER_PARAMS);
-  }, []);
+  }, [history]);
+
+  /** Undo to previous state */
+  const handleUndo = useCallback(() => {
+    const state = history.undo();
+    if (state) {
+      isRestoringRef.current = true;
+      setActiveFilter(state.activeFilter);
+      setFilterParams(state.filterParams);
+      isRestoringRef.current = false;
+    }
+  }, [history]);
+
+  /** Redo to next state */
+  const handleRedo = useCallback(() => {
+    const state = history.redo();
+    if (state) {
+      isRestoringRef.current = true;
+      setActiveFilter(state.activeFilter);
+      setFilterParams(state.filterParams);
+      isRestoringRef.current = false;
+    }
+  }, [history]);
 
   /** Downloads the processed image as PNG */
   const handleDownload = useCallback(() => {
@@ -532,6 +606,10 @@ function App() {
         onLoadSample={handleLoadSample}
         onDownload={handleDownload}
         onReset={handleReset}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={history.canUndo}
+        canRedo={history.canRedo}
         hasImage={!!originalImage}
       />
 
