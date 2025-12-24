@@ -189,14 +189,8 @@ function App() {
   // ---------------------------------------------------------------------------
   const { processImage: workerProcess, isReady: workerReady } = useImageWorker();
   const [processedImage, setProcessedImage] = useState<ImageData | null>(null);
-  const [processingTime, setProcessingTime] = useState<number | null>(null);
+  const [, setProcessingTime] = useState<number | null>(null);
 
-  // Log processing time for debugging (can be used for UI later)
-  useEffect(() => {
-    if (processingTime !== null && processingTime > 0) {
-      console.debug(`[ImageVisLab] Filter processed in ${processingTime.toFixed(2)}ms`);
-    }
-  }, [processingTime]);
 
   /**
    * Applies the active filter to the original image using Web Worker.

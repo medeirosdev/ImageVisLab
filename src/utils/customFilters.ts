@@ -123,51 +123,6 @@ export function applyCustomFormula(imageData: ImageData, formula: string): Image
     return new ImageData(result, width, height);
 }
 
-// =============================================================================
-// Custom Kernel
-// =============================================================================
-
-/**
- * Generates an empty kernel of specified size.
- * 
- * @param size - Kernel size (3, 5, or 7)
- * @returns 2D array of zeros
- */
-export function createEmptyKernel(size: number): number[][] {
-    return Array.from({ length: size }, () => Array(size).fill(0));
-}
-
-/**
- * Common preset kernels for quick selection.
- */
-export const PRESET_KERNELS = {
-    identity: [
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 0, 0],
-    ],
-    sharpen: [
-        [0, -1, 0],
-        [-1, 5, -1],
-        [0, -1, 0],
-    ],
-    edgeDetect: [
-        [-1, -1, -1],
-        [-1, 8, -1],
-        [-1, -1, -1],
-    ],
-    emboss: [
-        [-2, -1, 0],
-        [-1, 1, 1],
-        [0, 1, 2],
-    ],
-    blur: [
-        [1 / 9, 1 / 9, 1 / 9],
-        [1 / 9, 1 / 9, 1 / 9],
-        [1 / 9, 1 / 9, 1 / 9],
-    ],
-};
-
 /**
  * Applies a custom convolution kernel to an image.
  * 
@@ -178,3 +133,4 @@ export const PRESET_KERNELS = {
 export function applyCustomKernel(imageData: ImageData, kernel: number[][]): ImageData {
     return applyConvolution(imageData, kernel);
 }
+
