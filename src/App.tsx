@@ -23,6 +23,19 @@ import {
   getNeighborhood,
   calculateHistogram,
 } from './utils/imageFilters';
+import {
+  applyBoxBlur,
+  applyGaussianBlur,
+  applySharpen,
+  applyLaplacian,
+} from './utils/convolution';
+import {
+  applyThreshold,
+  applyErosion,
+  applyDilation,
+  applyOpening,
+  applyClosing,
+} from './utils/morphology';
 import './App.css';
 
 // =============================================================================
@@ -36,6 +49,9 @@ const DEFAULT_FILTER_PARAMS: FilterParams = {
   logConstant: 1.0,
   quantizationLevels: 256,
   samplingFactor: 1,
+  kernelSize: 3,
+  gaussianSigma: 1.0,
+  threshold: 128,
 };
 
 // =============================================================================
@@ -103,6 +119,26 @@ function App() {
         return applySampling(originalImage, filterParams.samplingFactor);
       case 'equalization':
         return applyEqualization(originalImage);
+      // Spatial Filters (Convolution)
+      case 'boxBlur':
+        return applyBoxBlur(originalImage, filterParams.kernelSize);
+      case 'gaussianBlur':
+        return applyGaussianBlur(originalImage, filterParams.kernelSize, filterParams.gaussianSigma);
+      case 'sharpen':
+        return applySharpen(originalImage);
+      case 'laplacian':
+        return applyLaplacian(originalImage);
+      // Morphology Operations
+      case 'threshold':
+        return applyThreshold(originalImage, filterParams.threshold);
+      case 'erosion':
+        return applyErosion(applyThreshold(originalImage, filterParams.threshold));
+      case 'dilation':
+        return applyDilation(applyThreshold(originalImage, filterParams.threshold));
+      case 'opening':
+        return applyOpening(applyThreshold(originalImage, filterParams.threshold));
+      case 'closing':
+        return applyClosing(applyThreshold(originalImage, filterParams.threshold));
       case 'none':
       default:
         return originalImage;

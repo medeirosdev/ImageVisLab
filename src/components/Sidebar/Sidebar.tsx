@@ -151,6 +151,57 @@ const FILTER_CATEGORIES: FilterCategory[] = [
             },
         ],
     },
+    {
+        id: 'morphology',
+        name: 'Morphology',
+        filters: [
+            {
+                id: 'threshold',
+                name: 'Binarization',
+                description: 'Converts to black & white',
+                formula: 's = \\begin{cases} 0 & r < T \\\\ 255 & r \\geq T \\end{cases}',
+                params: [
+                    { key: 'threshold', label: 'T', min: 0, max: 255, step: 1 },
+                ],
+            },
+            {
+                id: 'erosion',
+                name: 'Erosion',
+                description: 'Shrinks white regions',
+                formula: 'A \\ominus B',
+                params: [
+                    { key: 'threshold', label: 'T', min: 0, max: 255, step: 1 },
+                ],
+            },
+            {
+                id: 'dilation',
+                name: 'Dilation',
+                description: 'Expands white regions',
+                formula: 'A \\oplus B',
+                params: [
+                    { key: 'threshold', label: 'T', min: 0, max: 255, step: 1 },
+                ],
+            },
+            {
+                id: 'opening',
+                name: 'Opening',
+                description: 'Removes small white noise',
+                formula: 'A \\circ B = (A \\ominus B) \\oplus B',
+                params: [
+                    { key: 'threshold', label: 'T', min: 0, max: 255, step: 1 },
+                ],
+            },
+            {
+                id: 'closing',
+                name: 'Closing',
+                description: 'Fills small black holes',
+                formula: 'A \\bullet B = (A \\oplus B) \\ominus B',
+                params: [
+                    { key: 'threshold', label: 'T', min: 0, max: 255, step: 1 },
+                ],
+            },
+        ],
+    },
 ];
 
 // =============================================================================
@@ -189,9 +240,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Header */}
             <div className="sidebar-header">
                 <h1 className="sidebar-title">
-                    <span className="gradient-text">PDI</span> Simulator
+                    <span className="gradient-text">ImageVisLab</span> v1.0
                 </h1>
-                <p className="sidebar-subtitle">Digital Image Processing</p>
+                <p className="sidebar-subtitle">PDI Simulator</p>
             </div>
 
             {/* Image Actions */}
