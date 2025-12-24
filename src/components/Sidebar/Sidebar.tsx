@@ -198,6 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                                 step={param.step}
                                                 value={filterParams[param.key]}
                                                 onChange={(e) => onParamChange(param.key, parseFloat(e.target.value))}
+                                                title={`${param.label}: ${filterParams[param.key]} (Range: ${param.min} - ${param.max})`}
                                             />
                                         </div>
                                     ))}
