@@ -27,6 +27,10 @@ interface SidebarProps {
     onLoadSample: (type: 'gradient' | 'checkerboard' | 'noise') => void;
     onDownload: () => void;
     onReset: () => void;
+    onUndo: () => void;
+    onRedo: () => void;
+    canUndo: boolean;
+    canRedo: boolean;
     hasImage: boolean;
 }
 
@@ -218,6 +222,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onLoadSample,
     onDownload,
     onReset,
+    onUndo,
+    onRedo,
+    canUndo,
+    canRedo,
     hasImage,
 }) => {
     // Track which categories are expanded
@@ -273,6 +281,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
                         Save
+                    </button>
+                </div>
+
+                {/* Undo/Redo */}
+                <div className="undo-redo-buttons">
+                    <button
+                        className="btn btn-icon"
+                        onClick={onUndo}
+                        disabled={!canUndo}
+                        title="Undo (Ctrl+Z)"
+                    >
+                        ↶
+                    </button>
+                    <button
+                        className="btn btn-icon"
+                        onClick={onRedo}
+                        disabled={!canRedo}
+                        title="Redo (Ctrl+Y)"
+                    >
+                        ↷
                     </button>
                 </div>
 
