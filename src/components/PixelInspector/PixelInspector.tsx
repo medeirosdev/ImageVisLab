@@ -282,6 +282,10 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
                     <div className="pixel-data-row">
                         <span className="data-label">Position:</span>
                         <span className="data-value mono">({pixelInfo.x}, {pixelInfo.y})</span>
+                        <span className="data-label">Size:</span>
+                        <span className="data-value mono">{imageWidth}×{imageHeight}</span>
+                    </div>
+                    <div className="pixel-data-row">
                         <span className="data-label">Color:</span>
                         <div
                             className="color-swatch"
