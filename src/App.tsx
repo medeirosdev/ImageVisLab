@@ -139,6 +139,25 @@ function App() {
 
       const img = new Image();
       img.onload = () => {
+        // Check for very large images (> 4000px in any dimension)
+        const MAX_DIMENSION = 4000;
+        const MAX_PIXELS = 16000000; // 16 megapixels
+        const totalPixels = img.width * img.height;
+
+        if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
+          setIsLoading(false);
+          setLoadingMessage('');
+          alert(`Image too large (${img.width}x${img.height}). Maximum dimension is ${MAX_DIMENSION}px.`);
+          return;
+        }
+
+        if (totalPixels > MAX_PIXELS) {
+          setIsLoading(false);
+          setLoadingMessage('');
+          alert(`Image has too many pixels (${(totalPixels / 1000000).toFixed(1)}MP). Maximum is ${MAX_PIXELS / 1000000}MP.`);
+          return;
+        }
+
         setLoadingMessage('Processing pixels...');
 
         // Use setTimeout to allow UI to update before heavy processing
