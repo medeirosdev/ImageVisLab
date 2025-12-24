@@ -21,6 +21,7 @@ import {
   applyEqualization,
   getPixelInfo,
   getNeighborhood,
+  calculateHistogram,
 } from './utils/imageFilters';
 import './App.css';
 
@@ -97,6 +98,22 @@ function App() {
         return originalImage;
     }
   }, [originalImage, activeFilter, filterParams]);
+
+  /**
+   * Calculates histogram data for the processed image.
+   */
+  const histogramData = useMemo(() => {
+    if (!processedImage) return null;
+    return calculateHistogram(processedImage);
+  }, [processedImage]);
+
+  /**
+   * Calculates histogram data for the original image (for comparison).
+   */
+  const originalHistogramData = useMemo(() => {
+    if (!originalImage) return null;
+    return calculateHistogram(originalImage);
+  }, [originalImage]);
 
   // ---------------------------------------------------------------------------
   // Handlers: Image Loading
@@ -308,6 +325,9 @@ function App() {
           neighborhood={neighborhood}
           imageWidth={originalImage?.width}
           imageHeight={originalImage?.height}
+          histogramData={histogramData}
+          originalHistogramData={originalHistogramData}
+          hasImage={!!originalImage}
         />
       </main>
     </div>
