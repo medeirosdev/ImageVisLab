@@ -7,6 +7,10 @@
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+<p align="center">
+  <img src="./docs/screenshots/interfaceinicial.jpg" alt="ImageVisLab Interface" width="800">
+</p>
+
 ## Overview
 
 ImageVisLab is a visual educational tool that helps students understand digital image processing algorithms through real-time visualization. Watch formulas come to life as you apply filters to images!
