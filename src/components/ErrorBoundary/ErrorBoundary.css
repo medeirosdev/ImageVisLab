@@ -1,0 +1,74 @@
+/**
+ * ImageVisLab - Error Boundary Styles
+ */
+
+.error-boundary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: var(--space-xl);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+}
+
+.error-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+}
+
+.error-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--space-sm) 0;
+}
+
+.error-message {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-lg) 0;
+}
+
+.error-reset-btn {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--color-accent-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.error-reset-btn:hover {
+    filter: brightness(1.1);
+}
+
+.error-details {
+    margin-top: var(--space-lg);
+    text-align: left;
+}
+
+.error-details summary {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    margin-bottom: var(--space-sm);
+}
+
+.error-details pre {
+    font-size: 0.6875rem;
+    background: var(--color-bg-primary);
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    color: var(--color-text-secondary);
+    max-height: 150px;
+}
