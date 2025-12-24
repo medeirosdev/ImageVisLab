@@ -24,6 +24,7 @@ interface SidebarProps {
     onFilterChange: (filter: FilterType) => void;
     onParamChange: (param: keyof FilterParams, value: number) => void;
     onLoadImage: () => void;
+    onLoadSample: (type: 'gradient' | 'checkerboard' | 'noise') => void;
     onDownload: () => void;
     onReset: () => void;
     hasImage: boolean;
@@ -214,6 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onFilterChange,
     onParamChange,
     onLoadImage,
+    onLoadSample,
     onDownload,
     onReset,
     hasImage,
@@ -271,6 +273,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
                         Save
+                    </button>
+                </div>
+
+                {/* Sample Images */}
+                <div className="sample-images">
+                    <span className="sample-label">Samples:</span>
+                    <button className="sample-btn" onClick={() => onLoadSample('gradient')} title="Gradient">
+                        🌓
+                    </button>
+                    <button className="sample-btn" onClick={() => onLoadSample('checkerboard')} title="Checkerboard">
+                        ▦
+                    </button>
+                    <button className="sample-btn" onClick={() => onLoadSample('noise')} title="Noise">
+                        ◻
                     </button>
                 </div>
             </div>

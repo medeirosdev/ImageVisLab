@@ -401,6 +401,44 @@ function App() {
     link.click();
   }, [animatedImage, processedImage, imageFileName]);
 
+  /** Generates and loads a sample image */
+  const handleLoadSample = useCallback((type: 'gradient' | 'checkerboard' | 'noise') => {
+    const size = 256;
+    const data = new Uint8ClampedArray(size * size * 4);
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const idx = (y * size + x) * 4;
+        let value = 0;
+
+        switch (type) {
+          case 'gradient':
+            // Horizontal gradient
+            value = Math.floor((x / size) * 255);
+            break;
+          case 'checkerboard':
+            // 16x16 checkerboard pattern
+            value = ((Math.floor(x / 16) + Math.floor(y / 16)) % 2) * 255;
+            break;
+          case 'noise':
+            // Random noise
+            value = Math.floor(Math.random() * 256);
+            break;
+        }
+
+        data[idx] = value;
+        data[idx + 1] = value;
+        data[idx + 2] = value;
+        data[idx + 3] = 255;
+      }
+    }
+
+    const imageData = new ImageData(data, size, size);
+    setOriginalImage(imageData);
+    setImageFileName(`sample_${type}.png`);
+    handleResetAnimation();
+  }, [handleResetAnimation]);
+
   // ---------------------------------------------------------------------------
   // Handlers: Pixel Inspector
   // ---------------------------------------------------------------------------
@@ -491,6 +529,7 @@ function App() {
         onFilterChange={handleFilterChange}
         onParamChange={handleParamChange}
         onLoadImage={handleLoadImage}
+        onLoadSample={handleLoadSample}
         onDownload={handleDownload}
         onReset={handleReset}
         hasImage={!!originalImage}
