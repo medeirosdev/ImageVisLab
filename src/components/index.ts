@@ -11,3 +11,4 @@
 export { ImageCanvas } from './ImageCanvas';
 export { Sidebar } from './Sidebar';
 export { PixelInspector } from './PixelInspector';
+export { Histogram } from './Histogram';
