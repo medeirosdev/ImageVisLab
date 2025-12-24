@@ -1,0 +1,266 @@
+/**
+ * ImageVisLab - Sidebar Styles
+ * 
+ * Styles for the sidebar component including
+ * header, sections, filter cards, and controls.
+ * 
+ * @author ImageVisLab Contributors
+ * @license MIT
+ */
+
+/* =============================================================================
+   Sidebar Container
+   ============================================================================= */
+
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+/* =============================================================================
+   Header Section
+   ============================================================================= */
+
+.sidebar-header {
+    padding: var(--space-lg);
+    background: linear-gradient(180deg,
+            var(--color-bg-tertiary) 0%,
+            var(--color-bg-secondary) 100%);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-xs);
+}
+
+.sidebar-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+/* =============================================================================
+   Content Sections
+   ============================================================================= */
+
+.sidebar-section {
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-md);
+}
+
+/* =============================================================================
+   Action Buttons
+   ============================================================================= */
+
+.action-buttons {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--color-accent-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--color-accent-secondary);
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+}
+
+/* =============================================================================
+   Filters Section
+   ============================================================================= */
+
+.filters-section {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: var(--space-xl);
+}
+
+.filters-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+/* =============================================================================
+   Filter Cards
+   ============================================================================= */
+
+.filter-card {
+    padding: var(--space-md);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filter-card:hover:not(.disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-border-active);
+}
+
+.filter-card.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--color-accent-primary);
+}
+
+.filter-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xs);
+}
+
+.filter-name {
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.filter-active-badge {
+    font-size: 0.6875rem;
+    padding: 2px 8px;
+    background: var(--color-accent-primary);
+    color: white;
+    border-radius: var(--radius-full);
+    font-weight: 500;
+}
+
+.filter-description {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.filter-formula {
+    display: inline-block;
+    padding: 4px 8px;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    color: var(--color-accent-tertiary);
+}
+
+/* =============================================================================
+   Filter Parameters (Sliders)
+   ============================================================================= */
+
+.filter-params {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    animation: slideUp 0.2s ease;
+}
+
+.param-control {
+    margin-bottom: var(--space-md);
+}
+
+.param-control:last-child {
+    margin-bottom: 0;
+}
+
+.param-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+.param-value {
+    font-family: var(--font-mono);
+    color: var(--color-accent-secondary);
+    font-weight: 500;
+}
+
+.param-slider {
+    width: 100%;
+    height: 6px;
+    appearance: none;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-full);
+    outline: none;
+}
+
+.param-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.param-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: var(--shadow-glow);
+}
+
+.param-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent-primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* =============================================================================
+   Footer
+   ============================================================================= */
+
+.sidebar-footer {
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+}
+
+.sidebar-footer p {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
