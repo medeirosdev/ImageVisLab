@@ -9,7 +9,7 @@
  * @license MIT
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { FilterType, FilterParams } from '../../types';
 import { LaTeXFormula } from '../LaTeXFormula';
 import './Sidebar.css';
@@ -19,21 +19,13 @@ import './Sidebar.css';
 // =============================================================================
 
 interface SidebarProps {
-    /** Currently active filter */
     activeFilter: FilterType;
-    /** Current filter parameters */
     filterParams: FilterParams;
-    /** Callback when filter selection changes */
     onFilterChange: (filter: FilterType) => void;
-    /** Callback when a filter parameter changes */
     onParamChange: (param: keyof FilterParams, value: number) => void;
-    /** Callback to trigger image loading */
     onLoadImage: () => void;
-    /** Callback to download processed image */
     onDownload: () => void;
-    /** Callback to reset all filters */
     onReset: () => void;
-    /** Whether an image is currently loaded */
     hasImage: boolean;
 }
 
@@ -51,68 +43,113 @@ interface FilterOption {
     }[];
 }
 
+interface FilterCategory {
+    id: string;
+    name: string;
+    filters: FilterOption[];
+}
+
 // =============================================================================
-// Filter Definitions
+// Filter Definitions by Category
 // =============================================================================
 
-/**
- * Configuration for all available filters.
- * Each filter has a name, description, optional formula (LaTeX), and optional parameters.
- */
-const FILTERS: FilterOption[] = [
+const FILTER_CATEGORIES: FilterCategory[] = [
     {
-        id: 'none',
-        name: 'Original',
-        description: 'No processing applied',
-    },
-    {
-        id: 'negative',
-        name: 'Negative',
-        description: 'Inverts intensity values',
-        formula: 's = L - 1 - r',
-    },
-    {
-        id: 'gamma',
-        name: 'Gamma Correction',
-        description: 'Adjusts brightness curve',
-        formula: 's = c \\cdot r^{\\gamma}',
-        params: [
-            { key: 'gamma', label: 'γ (Gamma)', min: 0.1, max: 5, step: 0.1 },
-            { key: 'gammaConstant', label: 'c (Constant)', min: 0.1, max: 2, step: 0.1 },
+        id: 'point',
+        name: 'Point Operations',
+        filters: [
+            {
+                id: 'none',
+                name: 'Original',
+                description: 'No processing applied',
+            },
+            {
+                id: 'negative',
+                name: 'Negative',
+                description: 'Inverts intensity values',
+                formula: 's = L - 1 - r',
+            },
+            {
+                id: 'gamma',
+                name: 'Gamma',
+                description: 'Adjusts brightness curve',
+                formula: 's = c \\cdot r^{\\gamma}',
+                params: [
+                    { key: 'gamma', label: 'γ', min: 0.1, max: 5, step: 0.1 },
+                    { key: 'gammaConstant', label: 'c', min: 0.1, max: 2, step: 0.1 },
+                ],
+            },
+            {
+                id: 'log',
+                name: 'Logarithmic',
+                description: 'Expands dark tones',
+                formula: 's = c \\cdot \\log(1 + r)',
+                params: [
+                    { key: 'logConstant', label: 'c', min: 0.1, max: 3, step: 0.1 },
+                ],
+            },
+            {
+                id: 'quantization',
+                name: 'Quantization',
+                description: 'Reduces gray levels',
+                formula: '2^k \\text{ levels}',
+                params: [
+                    { key: 'quantizationLevels', label: 'Levels', min: 2, max: 256, step: 1 },
+                ],
+            },
+            {
+                id: 'sampling',
+                name: 'Subsampling',
+                description: 'Reduces spatial resolution',
+                formula: 'n \\times n',
+                params: [
+                    { key: 'samplingFactor', label: 'N', min: 1, max: 32, step: 1 },
+                ],
+            },
+            {
+                id: 'equalization',
+                name: 'Equalization',
+                description: 'Equalizes histogram',
+                formula: 's_k = (L-1) \\cdot \\text{CDF}',
+            },
         ],
     },
     {
-        id: 'log',
-        name: 'Logarithmic',
-        description: 'Expands dark tones',
-        formula: 's = c \\cdot \\log(1 + r)',
-        params: [
-            { key: 'logConstant', label: 'c (Constant)', min: 0.1, max: 3, step: 0.1 },
+        id: 'spatial',
+        name: 'Spatial Filters',
+        filters: [
+            {
+                id: 'boxBlur',
+                name: 'Box Blur',
+                description: 'Mean filter (smoothing)',
+                formula: '\\frac{1}{n^2} \\sum f',
+                params: [
+                    { key: 'kernelSize', label: 'Size', min: 3, max: 7, step: 2 },
+                ],
+            },
+            {
+                id: 'gaussianBlur',
+                name: 'Gaussian Blur',
+                description: 'Weighted smoothing',
+                formula: 'G(x,y) = e^{-\\frac{x^2+y^2}{2\\sigma^2}}',
+                params: [
+                    { key: 'kernelSize', label: 'Size', min: 3, max: 7, step: 2 },
+                    { key: 'gaussianSigma', label: 'σ', min: 0.5, max: 3, step: 0.1 },
+                ],
+            },
+            {
+                id: 'sharpen',
+                name: 'Sharpen',
+                description: 'Enhances edges',
+                formula: 'f + k(f - \\bar{f})',
+            },
+            {
+                id: 'laplacian',
+                name: 'Laplacian',
+                description: 'Edge detection',
+                formula: '\\nabla^2 f',
+            },
         ],
-    },
-    {
-        id: 'quantization',
-        name: 'Quantization',
-        description: 'Reduces gray levels',
-        formula: '2^k \\text{ levels}',
-        params: [
-            { key: 'quantizationLevels', label: 'Levels', min: 2, max: 256, step: 1 },
-        ],
-    },
-    {
-        id: 'sampling',
-        name: 'Subsampling',
-        description: 'Reduces spatial resolution',
-        formula: 'n \\times n \\text{ blocks}',
-        params: [
-            { key: 'samplingFactor', label: 'Factor', min: 1, max: 32, step: 1 },
-        ],
-    },
-    {
-        id: 'equalization',
-        name: 'Equalization',
-        description: 'Equalizes histogram',
-        formula: 's_k = (L-1) \\cdot \\text{CDF}(r_k)',
     },
 ];
 
@@ -130,6 +167,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onReset,
     hasImage,
 }) => {
+    // Track which categories are expanded
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+        new Set(['point', 'spatial'])
+    );
+
+    const toggleCategory = (categoryId: string) => {
+        setExpandedCategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+            } else {
+                newSet.add(categoryId);
+            }
+            return newSet;
+        });
+    };
+
     return (
         <aside className="sidebar">
             {/* Header */}
@@ -140,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <p className="sidebar-subtitle">Digital Image Processing</p>
             </div>
 
-            {/* Image Actions Section */}
+            {/* Image Actions */}
             <div className="sidebar-section">
                 <h3 className="section-title">Image</h3>
                 <div className="action-buttons">
@@ -150,25 +204,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <polyline points="17,8 12,3 7,8" />
                             <line x1="12" y1="3" x2="12" y2="15" />
                         </svg>
-                        Load Image
+                        Load
                     </button>
-                    <button
-                        className="btn btn-secondary"
-                        onClick={onReset}
-                        disabled={!hasImage}
-                    >
+                    <button className="btn btn-secondary" onClick={onReset} disabled={!hasImage}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                             <path d="M3 3v5h5" />
                         </svg>
                         Reset
                     </button>
-                    <button
-                        className="btn btn-secondary"
-                        onClick={onDownload}
-                        disabled={!hasImage}
-                        title="Download processed image"
-                    >
+                    <button className="btn btn-secondary" onClick={onDownload} disabled={!hasImage} title="Download processed image">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                             <polyline points="7,10 12,15 17,10" />
@@ -179,55 +224,81 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
             </div>
 
-            {/* Filters Section */}
+            {/* Filter Categories */}
             <div className="sidebar-section filters-section">
                 <h3 className="section-title">Transformations</h3>
-                <div className="filters-list">
-                    {FILTERS.map((filter) => (
-                        <div
-                            key={filter.id}
-                            className={`filter-card ${activeFilter === filter.id ? 'active' : ''} ${!hasImage && filter.id !== 'none' ? 'disabled' : ''}`}
-                            onClick={() => hasImage && onFilterChange(filter.id)}
+
+                {FILTER_CATEGORIES.map((category) => (
+                    <div key={category.id} className="filter-category">
+                        {/* Category Header */}
+                        <button
+                            className={`category-header ${expandedCategories.has(category.id) ? 'expanded' : ''}`}
+                            onClick={() => toggleCategory(category.id)}
                         >
-                            <div className="filter-header">
-                                <span className="filter-name">{filter.name}</span>
-                                {activeFilter === filter.id && (
-                                    <span className="filter-active-badge">Active</span>
-                                )}
-                            </div>
-                            <p className="filter-description">{filter.description}</p>
+                            <span className="category-name">{category.name}</span>
+                            <svg
+                                className="category-chevron"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <polyline points="6,9 12,15 18,9" />
+                            </svg>
+                        </button>
 
-                            {filter.formula && (
-                                <div className="filter-formula">
-                                    <LaTeXFormula formula={filter.formula} />
-                                </div>
-                            )}
-
-                            {/* Filter Parameters (sliders) */}
-                            {filter.params && activeFilter === filter.id && (
-                                <div className="filter-params">
-                                    {filter.params.map((param) => (
-                                        <div key={param.key} className="param-control">
-                                            <label className="param-label">
-                                                {param.label}: <span className="param-value">{filterParams[param.key]}</span>
-                                            </label>
-                                            <input
-                                                type="range"
-                                                className="param-slider"
-                                                min={param.min}
-                                                max={param.max}
-                                                step={param.step}
-                                                value={filterParams[param.key]}
-                                                onChange={(e) => onParamChange(param.key, parseFloat(e.target.value))}
-                                                title={`${param.label}: ${filterParams[param.key]} (Range: ${param.min} - ${param.max})`}
-                                            />
+                        {/* Category Filters */}
+                        {expandedCategories.has(category.id) && (
+                            <div className="category-filters">
+                                {category.filters.map((filter) => (
+                                    <div
+                                        key={filter.id}
+                                        className={`filter-card ${activeFilter === filter.id ? 'active' : ''} ${!hasImage && filter.id !== 'none' ? 'disabled' : ''}`}
+                                        onClick={() => hasImage && onFilterChange(filter.id)}
+                                    >
+                                        <div className="filter-header">
+                                            <span className="filter-name">{filter.name}</span>
+                                            {activeFilter === filter.id && (
+                                                <span className="filter-active-badge">✓</span>
+                                            )}
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
+
+                                        {filter.formula && (
+                                            <div className="filter-formula">
+                                                <LaTeXFormula formula={filter.formula} />
+                                            </div>
+                                        )}
+
+                                        {/* Parameters */}
+                                        {filter.params && activeFilter === filter.id && (
+                                            <div className="filter-params">
+                                                {filter.params.map((param) => (
+                                                    <div key={param.key} className="param-control">
+                                                        <label className="param-label">
+                                                            {param.label}: <span className="param-value">{filterParams[param.key]}</span>
+                                                        </label>
+                                                        <input
+                                                            type="range"
+                                                            className="param-slider"
+                                                            min={param.min}
+                                                            max={param.max}
+                                                            step={param.step}
+                                                            value={filterParams[param.key]}
+                                                            onChange={(e) => onParamChange(param.key, parseFloat(e.target.value))}
+                                                            title={`${param.label}: ${filterParams[param.key]}`}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
 
             {/* Footer */}

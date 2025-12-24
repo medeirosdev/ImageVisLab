@@ -115,10 +115,73 @@
     padding-bottom: var(--space-xl);
 }
 
-.filters-list {
+/* =============================================================================
+   Filter Categories (Collapsible)
+   ============================================================================= */
+
+.filter-category {
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.category-header:hover {
+    background: var(--color-surface-hover);
+}
+
+.category-name {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.category-chevron {
+    transition: transform var(--transition-fast);
+    color: var(--color-text-muted);
+}
+
+.category-header.expanded .category-chevron {
+    transform: rotate(180deg);
+}
+
+.category-header.expanded .category-name {
+    color: var(--color-text-primary);
+}
+
+.category-filters {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: 0;
+    padding: 0 var(--space-lg) var(--space-md);
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* =============================================================================
