@@ -9,6 +9,8 @@
  * @license MIT
  */
 
+import type { DistanceMetric, NeighborType } from '../types';
+
 // =============================================================================
 // Point Operations (Pixel-wise Transformations)
 // =============================================================================
@@ -356,7 +358,6 @@ export function getNeighborhood(
 // Distance Metrics
 // =============================================================================
 
-import type { DistanceMetric, NeighborType } from '../types';
 
 /**
  * Calculates the distance between two points using the specified metric.
