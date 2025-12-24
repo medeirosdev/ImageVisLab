@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel } from './components';
+import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton } from './components';
 import { useHistory } from './hooks';
 import type { FilterType, FilterParams } from './types';
 import {
@@ -633,13 +633,21 @@ function App() {
         {/* Content Area: Canvas + FormulaPanel */}
         <div className="content-area">
           {/* Canvas: Image Display */}
-          <ImageCanvas
-            imageData={displayImage}
-            originalData={originalImage}
-            showOriginal={showOriginal}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-          />
+          {isLoading ? (
+            <LoadingSkeleton
+              type="image"
+              height="100%"
+              message={loadingMessage || 'Loading image...'}
+            />
+          ) : (
+            <ImageCanvas
+              imageData={displayImage}
+              originalData={originalImage}
+              showOriginal={showOriginal}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+            />
+          )}
 
           {/* Formula Panel */}
           <FormulaPanel
