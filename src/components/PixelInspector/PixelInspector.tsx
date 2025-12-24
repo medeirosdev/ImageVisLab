@@ -2,7 +2,7 @@
  * ImageVisLab - Digital Image Processing Simulator
  * 
  * PixelInspector component with tabbed interface.
- * Tab 1: Pixel Info - Magnifier with neighborhood highlighting, RGB values
+ * Tab 1: Pixel Info - Magnifier with distance visualization, RGB values
  * Tab 2: Histogram - Original vs Processed comparison
  * 
  * @module PixelInspector
@@ -69,15 +69,29 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
     const [neighborType, setNeighborType] = useState<NeighborType>('N8');
     const [distanceMetric, setDistanceMetric] = useState<DistanceMetric>('euclidean');
     const [showNeighborhood, setShowNeighborhood] = useState(true);
+    const [showDistanceOverlay, setShowDistanceOverlay] = useState(true);
 
     // Memoized: Calculate distances for neighbors
     const neighborhoodWithDistance = useMemo(() => {
-        return neighborhood.map(pixel => ({
-            ...pixel,
-            distance: calculateDistance(0, 0, pixel.x, pixel.y, distanceMetric),
-            isNeighbor: isInNeighborhood(pixel.x, pixel.y, neighborType),
-        }));
+        const maxDistance = Math.sqrt(2 * 5 * 5); // Max distance for radius 5
+        return neighborhood.map(pixel => {
+            const distance = calculateDistance(0, 0, pixel.x, pixel.y, distanceMetric);
+            return {
+                ...pixel,
+                distance,
+                isNeighbor: isInNeighborhood(pixel.x, pixel.y, neighborType),
+                // Normalize for color (0-1, inverted so closer = brighter)
+                distanceNormalized: 1 - Math.min(distance / maxDistance, 1),
+            };
+        });
     }, [neighborhood, distanceMetric, neighborType]);
+
+    // Get only immediate neighbors (N4/ND/N8 within 1 pixel)
+    const immediateNeighbors = useMemo(() => {
+        return neighborhoodWithDistance
+            .filter(p => Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1 && !(p.x === 0 && p.y === 0))
+            .sort((a, b) => a.distance - b.distance);
+    }, [neighborhoodWithDistance]);
 
     // ---------------------------------------------------------------------------
     // Render: Tab Navigation
@@ -139,18 +153,28 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
 
         return (
             <div className="tab-content info-tab">
-                {/* Magnifier with Neighborhood Controls */}
+                {/* Magnifier with Controls */}
                 <div className="info-section magnifier-section">
                     <div className="section-header">
-                        <h4 className="section-title">Magnifier (11x11)</h4>
-                        <label className="toggle-label">
-                            <input
-                                type="checkbox"
-                                checked={showNeighborhood}
-                                onChange={(e) => setShowNeighborhood(e.target.checked)}
-                            />
-                            Highlight
-                        </label>
+                        <h4 className="section-title">Magnifier</h4>
+                        <div className="toggle-group">
+                            <label className="toggle-label">
+                                <input
+                                    type="checkbox"
+                                    checked={showNeighborhood}
+                                    onChange={(e) => setShowNeighborhood(e.target.checked)}
+                                />
+                                N
+                            </label>
+                            <label className="toggle-label">
+                                <input
+                                    type="checkbox"
+                                    checked={showDistanceOverlay}
+                                    onChange={(e) => setShowDistanceOverlay(e.target.checked)}
+                                />
+                                D
+                            </label>
+                        </div>
                     </div>
 
                     {/* Neighborhood Type Selector */}
@@ -174,13 +198,36 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
                         {neighborhoodWithDistance.map((pixel, i) => {
                             const isCenter = pixel.x === 0 && pixel.y === 0;
                             const highlight = showNeighborhood && pixel.isNeighbor;
+                            const showDist = showDistanceOverlay && !isCenter;
+
+                            // Distance overlay opacity
+                            const overlayOpacity = showDist ? 0.7 * pixel.distanceNormalized : 0;
+
                             return (
                                 <div
                                     key={i}
                                     className={`magnifier-pixel ${isCenter ? 'center' : ''} ${highlight ? 'neighbor' : ''}`}
-                                    style={{ backgroundColor: `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})` }}
+                                    style={{
+                                        backgroundColor: `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})`,
+                                    }}
                                     title={`(${pixel.x}, ${pixel.y}) D=${pixel.distance.toFixed(2)}`}
-                                />
+                                >
+                                    {/* Distance overlay */}
+                                    {showDist && (
+                                        <div
+                                            className="distance-overlay"
+                                            style={{
+                                                opacity: overlayOpacity,
+                                            }}
+                                        />
+                                    )}
+                                    {/* Distance number */}
+                                    {showDist && Math.abs(pixel.x) <= 2 && Math.abs(pixel.y) <= 2 && (
+                                        <span className="distance-number">
+                                            {pixel.distance.toFixed(1)}
+                                        </span>
+                                    )}
+                                </div>
                             );
                         })}
                     </div>
@@ -207,48 +254,64 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
                     </div>
                 </div>
 
+                {/* Neighbor Distances Panel */}
+                <div className="info-section neighbor-distances-section">
+                    <h4 className="section-title">Neighbor Distances</h4>
+                    <div className="neighbor-distances-grid">
+                        {immediateNeighbors.map((neighbor, i) => {
+                            const isN4 = neighbor.x === 0 || neighbor.y === 0;
+                            const isND = neighbor.x !== 0 && neighbor.y !== 0;
+                            return (
+                                <div
+                                    key={i}
+                                    className={`neighbor-distance-item ${isN4 ? 'n4' : ''} ${isND ? 'nd' : ''}`}
+                                    style={{ backgroundColor: `rgb(${neighbor.r}, ${neighbor.g}, ${neighbor.b})` }}
+                                >
+                                    <span className="neighbor-pos">({neighbor.x},{neighbor.y})</span>
+                                    <span className="neighbor-dist">{neighbor.distance.toFixed(2)}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 {/* Pixel Data */}
                 <div className="info-section pixel-data-section">
                     <h4 className="section-title">Pixel Data</h4>
 
-                    <div className="pixel-data-grid">
-                        <div className="data-item">
-                            <span className="data-label">Position</span>
-                            <span className="data-value mono">({pixelInfo.x}, {pixelInfo.y})</span>
-                        </div>
-                        <div className="data-item">
-                            <span className="data-label">Image Size</span>
-                            <span className="data-value mono">{imageWidth} x {imageHeight}</span>
-                        </div>
-                    </div>
-
-                    {/* Color Preview */}
-                    <div className="color-preview-large" style={{ backgroundColor: pixelInfo.hex }}>
-                        <span className="color-label">{pixelInfo.hex}</span>
+                    <div className="pixel-data-row">
+                        <span className="data-label">Position:</span>
+                        <span className="data-value mono">({pixelInfo.x}, {pixelInfo.y})</span>
+                        <span className="data-label">Color:</span>
+                        <div
+                            className="color-swatch"
+                            style={{ backgroundColor: pixelInfo.hex }}
+                            title={pixelInfo.hex}
+                        />
                     </div>
 
                     {/* RGB Channels */}
-                    <div className="channels-grid">
-                        <div className="channel-item channel-r">
-                            <span className="channel-name">R</span>
-                            <div className="channel-bar-container">
-                                <div className="channel-bar-fill" style={{ width: `${(pixelInfo.r / 255) * 100}%` }} />
+                    <div className="channels-compact">
+                        <div className="channel-compact channel-r">
+                            <span>R</span>
+                            <div className="channel-bar-mini">
+                                <div style={{ width: `${(pixelInfo.r / 255) * 100}%` }} />
                             </div>
-                            <span className="channel-value">{pixelInfo.r}</span>
+                            <span>{pixelInfo.r}</span>
                         </div>
-                        <div className="channel-item channel-g">
-                            <span className="channel-name">G</span>
-                            <div className="channel-bar-container">
-                                <div className="channel-bar-fill" style={{ width: `${(pixelInfo.g / 255) * 100}%` }} />
+                        <div className="channel-compact channel-g">
+                            <span>G</span>
+                            <div className="channel-bar-mini">
+                                <div style={{ width: `${(pixelInfo.g / 255) * 100}%` }} />
                             </div>
-                            <span className="channel-value">{pixelInfo.g}</span>
+                            <span>{pixelInfo.g}</span>
                         </div>
-                        <div className="channel-item channel-b">
-                            <span className="channel-name">B</span>
-                            <div className="channel-bar-container">
-                                <div className="channel-bar-fill" style={{ width: `${(pixelInfo.b / 255) * 100}%` }} />
+                        <div className="channel-compact channel-b">
+                            <span>B</span>
+                            <div className="channel-bar-mini">
+                                <div style={{ width: `${(pixelInfo.b / 255) * 100}%` }} />
                             </div>
-                            <span className="channel-value">{pixelInfo.b}</span>
+                            <span>{pixelInfo.b}</span>
                         </div>
                     </div>
                 </div>

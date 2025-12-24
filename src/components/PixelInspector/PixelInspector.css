@@ -176,6 +176,11 @@
     color: white;
 }
 
+.toggle-group {
+    display: flex;
+    gap: var(--space-sm);
+}
+
 .magnifier-grid {
     display: grid;
     grid-template-columns: repeat(11, 1fr);
@@ -189,6 +194,10 @@
 .magnifier-pixel {
     width: 16px;
     height: 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: transform var(--transition-fast);
 }
 
@@ -205,7 +214,27 @@
 
 .magnifier-pixel:hover {
     transform: scale(1.4);
-    z-index: 2;
+    z-index: 3;
+}
+
+/* Distance Overlay (brightness by distance) */
+.distance-overlay {
+    position: absolute;
+    inset: 0;
+    background: white;
+    pointer-events: none;
+}
+
+/* Distance Number */
+.distance-number {
+    position: relative;
+    z-index: 1;
+    font-size: 6px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 0 2px black, 0 0 2px black;
+    pointer-events: none;
 }
 
 /* =============================================================================
@@ -444,4 +473,116 @@
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
     text-align: center;
+}
+
+/* =============================================================================
+   Neighbor Distances Panel
+   ============================================================================= */
+
+.neighbor-distances-section {
+    flex-shrink: 0;
+}
+
+.neighbor-distances-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.neighbor-distance-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    font-size: 0.625rem;
+    font-family: var(--font-mono);
+}
+
+.neighbor-distance-item.n4 {
+    outline: 1px solid var(--color-accent-primary);
+}
+
+.neighbor-distance-item.nd {
+    outline: 1px solid var(--color-warning);
+}
+
+.neighbor-pos {
+    color: white;
+    text-shadow: 0 0 2px black;
+    font-weight: 600;
+}
+
+.neighbor-dist {
+    color: white;
+    text-shadow: 0 0 2px black;
+    font-size: 0.6875rem;
+    font-weight: 700;
+}
+
+/* =============================================================================
+   Compact Pixel Data
+   ============================================================================= */
+
+.pixel-data-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xs);
+}
+
+.color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+}
+
+.channels-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.channel-compact {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.6875rem;
+    font-family: var(--font-mono);
+}
+
+.channel-compact span:first-child {
+    width: 12px;
+    font-weight: 600;
+}
+
+.channel-compact span:last-child {
+    width: 24px;
+    text-align: right;
+}
+
+.channel-bar-mini {
+    flex: 1;
+    height: 4px;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.channel-bar-mini>div {
+    height: 100%;
+    border-radius: var(--radius-full);
+}
+
+.channel-compact.channel-r .channel-bar-mini>div {
+    background: var(--color-channel-r);
+}
+
+.channel-compact.channel-g .channel-bar-mini>div {
+    background: var(--color-channel-g);
+}
+
+.channel-compact.channel-b .channel-bar-mini>div {
+    background: var(--color-channel-b);
 }
