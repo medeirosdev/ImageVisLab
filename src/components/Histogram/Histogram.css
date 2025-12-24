@@ -1,0 +1,145 @@
+/**
+ * ImageVisLab - Histogram Styles
+ * 
+ * Styles for the histogram visualization component.
+ * 
+ * @author ImageVisLab Contributors
+ * @license MIT
+ */
+
+/* =============================================================================
+   Histogram Container
+   ============================================================================= */
+
+.histogram {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+}
+
+.histogram.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+/* =============================================================================
+   Channel Container
+   ============================================================================= */
+
+.histogram-channel {
+    position: relative;
+}
+
+.histogram-channel .channel-label {
+    position: absolute;
+    top: 4px;
+    left: 8px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    opacity: 0.7;
+    z-index: 1;
+}
+
+.histogram-r .channel-label {
+    color: var(--color-channel-r);
+}
+
+.histogram-g .channel-label {
+    color: var(--color-channel-g);
+}
+
+.histogram-b .channel-label {
+    color: var(--color-channel-b);
+}
+
+.histogram-gray .channel-label {
+    color: var(--color-text-muted);
+}
+
+/* =============================================================================
+   Histogram Bars
+   ============================================================================= */
+
+.histogram-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    padding: 4px;
+}
+
+.histogram-bar {
+    flex: 1;
+    min-width: 1px;
+    transition: height var(--transition-fast);
+}
+
+.histogram-r .histogram-bar {
+    background: var(--color-channel-r);
+}
+
+.histogram-g .histogram-bar {
+    background: var(--color-channel-g);
+}
+
+.histogram-b .histogram-bar {
+    background: var(--color-channel-b);
+}
+
+.histogram-gray .histogram-bar {
+    background: linear-gradient(to top, #444, #888);
+}
+
+/* =============================================================================
+   Overlay Mode (All Channels)
+   ============================================================================= */
+
+.histogram-overlay .histogram-bars {
+    position: relative;
+}
+
+.histogram-bar-group {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    position: relative;
+    height: 100%;
+}
+
+.histogram-bar-group .histogram-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0.5;
+    mix-blend-mode: screen;
+}
+
+.histogram-bar-group .bar-r {
+    background: var(--color-channel-r);
+    z-index: 1;
+}
+
+.histogram-bar-group .bar-g {
+    background: var(--color-channel-g);
+    z-index: 2;
+}
+
+.histogram-bar-group .bar-b {
+    background: var(--color-channel-b);
+    z-index: 3;
+}
+
+/* =============================================================================
+   Hover Effects
+   ============================================================================= */
+
+.histogram-bar:hover {
+    opacity: 0.8;
+}
