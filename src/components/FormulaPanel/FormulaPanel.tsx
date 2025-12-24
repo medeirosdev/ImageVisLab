@@ -113,7 +113,7 @@ const getFormulaInfo = (
         case 'sampling':
             return {
                 name: 'Spatial Subsampling',
-                latex: 's(x,y) = r\\left(\\lfloor\\frac{x}{n}\\rfloor \\cdot n, \\lfloor\\frac{y}{n}\\rfloor \\cdot n\\right)',
+                latex: 's_{x,y} = r_{n \\cdot \\lfloor x/n \\rfloor,\\, n \\cdot \\lfloor y/n \\rfloor}',
                 description: 'Reduces spatial resolution by averaging blocks of pixels.',
                 variables: [
                     { symbol: 'n', meaning: 'Block size', value: params.samplingFactor },

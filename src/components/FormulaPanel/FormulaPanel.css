@@ -54,11 +54,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-x: auto;
 }
 
 .latex-formula {
     color: var(--color-text-primary);
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+    white-space: nowrap;
 }
 
 /* KaTeX color override for dark theme */
