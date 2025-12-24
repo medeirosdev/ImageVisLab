@@ -130,6 +130,52 @@
     flex-shrink: 0;
 }
 
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xs);
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.toggle-label input {
+    accent-color: var(--color-accent-primary);
+}
+
+.neighbor-selector {
+    display: flex;
+    gap: 4px;
+    margin-bottom: var(--space-xs);
+}
+
+.neighbor-btn {
+    flex: 1;
+    padding: 4px 8px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-primary);
+    color: var(--color-text-muted);
+    transition: all var(--transition-fast);
+}
+
+.neighbor-btn:hover {
+    color: var(--color-text-primary);
+}
+
+.neighbor-btn.active {
+    background: var(--color-accent-primary);
+    color: white;
+}
+
 .magnifier-grid {
     display: grid;
     grid-template-columns: repeat(11, 1fr);
@@ -152,9 +198,49 @@
     z-index: 1;
 }
 
+.magnifier-pixel.neighbor {
+    outline: 2px solid var(--color-warning);
+    outline-offset: -1px;
+}
+
 .magnifier-pixel:hover {
     transform: scale(1.4);
     z-index: 2;
+}
+
+/* =============================================================================
+   Distance Metric Selector
+   ============================================================================= */
+
+.distance-section {
+    flex-shrink: 0;
+}
+
+.distance-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.distance-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-primary);
+    color: var(--color-text-muted);
+    text-align: left;
+    transition: all var(--transition-fast);
+}
+
+.distance-btn:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-tertiary);
+}
+
+.distance-btn.active {
+    background: var(--color-accent-primary);
+    color: white;
 }
 
 /* =============================================================================

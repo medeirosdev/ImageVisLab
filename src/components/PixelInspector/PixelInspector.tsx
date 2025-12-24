@@ -2,7 +2,7 @@
  * ImageVisLab - Digital Image Processing Simulator
  * 
  * PixelInspector component with tabbed interface.
- * Tab 1: Pixel Info - Magnifier, RGB values, position
+ * Tab 1: Pixel Info - Magnifier with neighborhood highlighting, RGB values
  * Tab 2: Histogram - Original vs Processed comparison
  * 
  * @module PixelInspector
@@ -10,8 +10,10 @@
  * @license MIT
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Histogram } from '../Histogram';
+import { isInNeighborhood, calculateDistance } from '../../utils/imageFilters';
+import type { NeighborType, DistanceMetric } from '../../types';
 import './PixelInspector.css';
 
 // =============================================================================
@@ -37,19 +39,12 @@ interface HistogramData {
 }
 
 interface PixelInspectorProps {
-    /** Current pixel information under the cursor */
     pixelInfo: PixelInfo | null;
-    /** Array of neighboring pixel data for magnifier */
     neighborhood?: Array<{ x: number; y: number; r: number; g: number; b: number }>;
-    /** Width of the current image */
     imageWidth?: number;
-    /** Height of the current image */
     imageHeight?: number;
-    /** Histogram data for the processed image */
     histogramData?: HistogramData | null;
-    /** Histogram data for the original image */
     originalHistogramData?: HistogramData | null;
-    /** Whether an image is loaded */
     hasImage?: boolean;
 }
 
@@ -71,6 +66,18 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
 }) => {
     const [activeTab, setActiveTab] = useState<InspectorTab>('info');
     const [histogramChannel, setHistogramChannel] = useState<HistogramChannel>('gray');
+    const [neighborType, setNeighborType] = useState<NeighborType>('N8');
+    const [distanceMetric, setDistanceMetric] = useState<DistanceMetric>('euclidean');
+    const [showNeighborhood, setShowNeighborhood] = useState(true);
+
+    // Memoized: Calculate distances for neighbors
+    const neighborhoodWithDistance = useMemo(() => {
+        return neighborhood.map(pixel => ({
+            ...pixel,
+            distance: calculateDistance(0, 0, pixel.x, pixel.y, distanceMetric),
+            isNeighbor: isInNeighborhood(pixel.x, pixel.y, neighborType),
+        }));
+    }, [neighborhood, distanceMetric, neighborType]);
 
     // ---------------------------------------------------------------------------
     // Render: Tab Navigation
@@ -132,17 +139,70 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
 
         return (
             <div className="tab-content info-tab">
-                {/* Magnifier */}
+                {/* Magnifier with Neighborhood Controls */}
                 <div className="info-section magnifier-section">
-                    <h4 className="section-title">Magnifier (11x11)</h4>
-                    <div className="magnifier-grid">
-                        {neighborhood.map((pixel, i) => (
-                            <div
-                                key={i}
-                                className={`magnifier-pixel ${pixel.x === 0 && pixel.y === 0 ? 'center' : ''}`}
-                                style={{ backgroundColor: `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})` }}
-                                title={`(${pixel.x}, ${pixel.y}): RGB(${pixel.r}, ${pixel.g}, ${pixel.b})`}
+                    <div className="section-header">
+                        <h4 className="section-title">Magnifier (11x11)</h4>
+                        <label className="toggle-label">
+                            <input
+                                type="checkbox"
+                                checked={showNeighborhood}
+                                onChange={(e) => setShowNeighborhood(e.target.checked)}
                             />
+                            Highlight
+                        </label>
+                    </div>
+
+                    {/* Neighborhood Type Selector */}
+                    {showNeighborhood && (
+                        <div className="neighbor-selector">
+                            {(['N4', 'ND', 'N8'] as NeighborType[]).map((type) => (
+                                <button
+                                    key={type}
+                                    className={`neighbor-btn ${neighborType === type ? 'active' : ''}`}
+                                    onClick={() => setNeighborType(type)}
+                                    title={type === 'N4' ? '4-connected' : type === 'ND' ? 'Diagonal' : '8-connected'}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Magnifier Grid */}
+                    <div className="magnifier-grid">
+                        {neighborhoodWithDistance.map((pixel, i) => {
+                            const isCenter = pixel.x === 0 && pixel.y === 0;
+                            const highlight = showNeighborhood && pixel.isNeighbor;
+                            return (
+                                <div
+                                    key={i}
+                                    className={`magnifier-pixel ${isCenter ? 'center' : ''} ${highlight ? 'neighbor' : ''}`}
+                                    style={{ backgroundColor: `rgb(${pixel.r}, ${pixel.g}, ${pixel.b})` }}
+                                    title={`(${pixel.x}, ${pixel.y}) D=${pixel.distance.toFixed(2)}`}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Distance Metric Selector */}
+                <div className="info-section distance-section">
+                    <h4 className="section-title">Distance Metric</h4>
+                    <div className="distance-selector">
+                        {([
+                            { id: 'euclidean', label: 'Euclidean', formula: '√(Δx² + Δy²)' },
+                            { id: 'cityBlock', label: 'City-block (D4)', formula: '|Δx| + |Δy|' },
+                            { id: 'chessboard', label: 'Chessboard (D8)', formula: 'max(|Δx|, |Δy|)' },
+                        ] as { id: DistanceMetric; label: string; formula: string }[]).map((metric) => (
+                            <button
+                                key={metric.id}
+                                className={`distance-btn ${distanceMetric === metric.id ? 'active' : ''}`}
+                                onClick={() => setDistanceMetric(metric.id)}
+                                title={metric.formula}
+                            >
+                                {metric.label}
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -159,14 +219,6 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
                         <div className="data-item">
                             <span className="data-label">Image Size</span>
                             <span className="data-value mono">{imageWidth} x {imageHeight}</span>
-                        </div>
-                        <div className="data-item">
-                            <span className="data-label">Hex Color</span>
-                            <span className="data-value mono">{pixelInfo.hex}</span>
-                        </div>
-                        <div className="data-item">
-                            <span className="data-label">Grayscale</span>
-                            <span className="data-value mono">{pixelInfo.gray}</span>
                         </div>
                     </div>
 
@@ -234,7 +286,6 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
 
                 {/* Histogram Comparison */}
                 <div className="histogram-comparison">
-                    {/* Original Histogram */}
                     {originalHistogramData && (
                         <div className="histogram-panel">
                             <h4 className="histogram-label">Original</h4>
@@ -246,7 +297,6 @@ export const PixelInspector: React.FC<PixelInspectorProps> = ({
                         </div>
                     )}
 
-                    {/* Processed Histogram */}
                     <div className="histogram-panel">
                         <h4 className="histogram-label">
                             {originalHistogramData ? 'Processed' : 'Current'}
