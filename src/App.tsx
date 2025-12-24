@@ -163,6 +163,23 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // ---------------------------------------------------------------------------
+  // State: Resize Modal
+  // ---------------------------------------------------------------------------
+  const [resizeModal, setResizeModal] = useState<{
+    show: boolean;
+    originalSize: { width: number; height: number };
+    newSize: { width: number; height: number };
+    onConfirm: (() => void) | null;
+    onCancel: (() => void) | null;
+  }>({
+    show: false,
+    originalSize: { width: 0, height: 0 },
+    newSize: { width: 0, height: 0 },
+    onConfirm: null,
+    onCancel: null,
+  });
+
+  // ---------------------------------------------------------------------------
   // Refs
   // ---------------------------------------------------------------------------
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -377,9 +394,9 @@ function App() {
 
       const img = new Image();
       img.onload = () => {
-        const RECOMMENDED_MAX = 2000; // Recommended max dimension
-        const ABSOLUTE_MAX = 4000;    // Hard limit
-        const MAX_PIXELS = 16000000;  // 16 megapixels
+        const RECOMMENDED_MAX = 1024; // Recommended max dimension
+        const ABSOLUTE_MAX = 2048;    // Hard limit
+        const MAX_PIXELS = 4000000;   // 4 megapixels
         const totalPixels = img.width * img.height;
         const maxDimension = Math.max(img.width, img.height);
 
@@ -432,20 +449,25 @@ function App() {
           const newWidth = Math.round(img.width * scale);
           const newHeight = Math.round(img.height * scale);
 
-          const shouldResize = window.confirm(
-            `⚠️ Imagem grande detectada (${img.width}x${img.height})\n\n` +
-            `Imagens grandes podem causar lentidão ou travamento.\n\n` +
-            `Clique OK para redimensionar para ${newWidth}x${newHeight} (recomendado)\n` +
-            `Clique Cancelar para tentar carregar o original`
-          );
-
-          if (shouldResize) {
-            setLoadingMessage(`Resizing to ${newWidth}x${newHeight}...`);
-            processImage(img, newWidth, newHeight);
-          } else {
-            // User chose to load original - proceed with warning
-            processImage(img, img.width, img.height);
-          }
+          // Show custom modal instead of browser confirm
+          setIsLoading(false);
+          setResizeModal({
+            show: true,
+            originalSize: { width: img.width, height: img.height },
+            newSize: { width: newWidth, height: newHeight },
+            onConfirm: () => {
+              setResizeModal(prev => ({ ...prev, show: false }));
+              setIsLoading(true);
+              setLoadingMessage(`Redimensionando para ${newWidth}x${newHeight}...`);
+              processImage(img, newWidth, newHeight);
+            },
+            onCancel: () => {
+              setResizeModal(prev => ({ ...prev, show: false }));
+              setIsLoading(true);
+              setLoadingMessage('Processando tamanho original...');
+              processImage(img, img.width, img.height);
+            },
+          });
         } else {
           // Image is small enough, process normally
           processImage(img, img.width, img.height);
@@ -689,6 +711,40 @@ function App() {
           <div className="loading-content">
             <div className="loading-spinner"></div>
             <p className="loading-message">{loadingMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Resize Modal */}
+      {resizeModal.show && (
+        <div className="resize-modal-overlay">
+          <div className="resize-modal">
+            <div className="resize-modal-icon">⚠️</div>
+            <h2 className="resize-modal-title">Imagem Grande Detectada</h2>
+            <p className="resize-modal-size">
+              <span className="size-original">{resizeModal.originalSize.width} × {resizeModal.originalSize.height}</span>
+            </p>
+            <p className="resize-modal-warning">
+              Imagens grandes podem causar lentidão ou travamento do navegador.
+            </p>
+            <div className="resize-modal-recommend">
+              <span className="recommend-label">Tamanho recomendado:</span>
+              <span className="recommend-size">{resizeModal.newSize.width} × {resizeModal.newSize.height}</span>
+            </div>
+            <div className="resize-modal-buttons">
+              <button
+                className="resize-btn resize-btn-primary"
+                onClick={resizeModal.onConfirm || undefined}
+              >
+                Redimensionar
+              </button>
+              <button
+                className="resize-btn resize-btn-secondary"
+                onClick={resizeModal.onCancel || undefined}
+              >
+                Manter Original
+              </button>
+            </div>
           </div>
         </div>
       )}
