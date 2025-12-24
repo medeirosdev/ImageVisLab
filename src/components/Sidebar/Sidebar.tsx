@@ -251,6 +251,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         new Set(['point', 'spatial'])
     );
 
+    // Track About modal visibility
+    const [showAbout, setShowAbout] = useState(false);
+
     const toggleCategory = (categoryId: string) => {
         setExpandedCategories(prev => {
             const newSet = new Set(prev);
@@ -480,7 +483,70 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Footer */}
             <div className="sidebar-footer">
                 <p className="mono">ImageVisLab v1.0</p>
+                <button
+                    className="about-btn"
+                    onClick={() => setShowAbout(true)}
+                >
+                    Sobre o Projeto
+                </button>
             </div>
+
+            {/* About Modal */}
+            {showAbout && (
+                <div className="about-overlay" onClick={() => setShowAbout(false)}>
+                    <div className="about-modal" onClick={(e) => e.stopPropagation()}>
+                        <button className="about-close" onClick={() => setShowAbout(false)}>×</button>
+
+                        <h2>ImageVisLab</h2>
+                        <p className="about-subtitle">Simulador Interativo de Processamento Digital de Imagens</p>
+
+                        <div className="about-section">
+                            <h3>Sobre o Projeto</h3>
+                            <p>
+                                Ferramenta educacional desenvolvida para visualizar e experimentar
+                                conceitos de processamento digital de imagens em tempo real.
+                                Inclui operações de ponto, filtros espaciais, morfologia e muito mais.
+                                Espero que ajude nos estudos de Álgebra de Imagens! Tmj!
+                            </p>
+                        </div>
+
+                        <div className="about-section">
+                            <h3>Desenvolvedor</h3>
+                            <div className="about-author">
+                                <div className="author-info">
+                                    <strong>Guilherme de Medeiros</strong>
+                                    <span>UNICAMP - Matemática Aplicada e Computacional</span>
+                                </div>
+                                <div className="author-links">
+                                    <a
+                                        href="https://www.linkedin.com/in/guilhermedemedeiros/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="social-link linkedin"
+                                    >
+                                        LinkedIn
+                                    </a>
+                                    <a
+                                        href="https://github.com/medeirosdev"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="social-link github"
+                                    >
+                                        GitHub
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="about-section">
+                            <h3>Tecnologias</h3>
+                            <p className="tech-stack">React + TypeScript + Vite + Canvas API</p>
+                        </div>
+
+                        <p className="about-footer">Feito em 24/12/2025</p>
+                    </div>
+                </div>
+            )}
         </aside>
     );
 };
