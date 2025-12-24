@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton } from './components';
+import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton, ProcessingIndicator } from './components';
 import { useHistory } from './hooks';
 import type { FilterType, FilterParams } from './types';
 import {
@@ -98,6 +98,11 @@ function App() {
   const animationRef = useRef<number | null>(null);
 
   // ---------------------------------------------------------------------------
+  // State: Processing
+  // ---------------------------------------------------------------------------
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // ---------------------------------------------------------------------------
   // Refs
   // ---------------------------------------------------------------------------
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,43 +118,69 @@ function App() {
   const processedImage = useMemo(() => {
     if (!originalImage) return null;
 
+    // Start processing indicator for potentially slow operations
+    const slowFilters = ['gaussianBlur', 'boxBlur', 'erosion', 'dilation', 'opening', 'closing'];
+    if (slowFilters.includes(activeFilter)) {
+      setIsProcessing(true);
+    }
+
+    let result: ImageData;
     switch (activeFilter) {
       case 'negative':
-        return applyNegative(originalImage);
+        result = applyNegative(originalImage);
+        break;
       case 'gamma':
-        return applyGamma(originalImage, filterParams.gamma, filterParams.gammaConstant);
+        result = applyGamma(originalImage, filterParams.gamma, filterParams.gammaConstant);
+        break;
       case 'log':
-        return applyLog(originalImage, filterParams.logConstant);
+        result = applyLog(originalImage, filterParams.logConstant);
+        break;
       case 'quantization':
-        return applyQuantization(originalImage, filterParams.quantizationLevels);
+        result = applyQuantization(originalImage, filterParams.quantizationLevels);
+        break;
       case 'sampling':
-        return applySampling(originalImage, filterParams.samplingFactor);
+        result = applySampling(originalImage, filterParams.samplingFactor);
+        break;
       case 'equalization':
-        return applyEqualization(originalImage);
+        result = applyEqualization(originalImage);
+        break;
       // Spatial Filters (Convolution)
       case 'boxBlur':
-        return applyBoxBlur(originalImage, filterParams.kernelSize);
+        result = applyBoxBlur(originalImage, filterParams.kernelSize);
+        break;
       case 'gaussianBlur':
-        return applyGaussianBlur(originalImage, filterParams.kernelSize, filterParams.gaussianSigma);
+        result = applyGaussianBlur(originalImage, filterParams.kernelSize, filterParams.gaussianSigma);
+        break;
       case 'sharpen':
-        return applySharpen(originalImage);
+        result = applySharpen(originalImage);
+        break;
       case 'laplacian':
-        return applyLaplacian(originalImage);
+        result = applyLaplacian(originalImage);
+        break;
       // Morphology Operations
       case 'threshold':
-        return applyThreshold(originalImage, filterParams.threshold);
+        result = applyThreshold(originalImage, filterParams.threshold);
+        break;
       case 'erosion':
-        return applyErosion(applyThreshold(originalImage, filterParams.threshold));
+        result = applyErosion(applyThreshold(originalImage, filterParams.threshold));
+        break;
       case 'dilation':
-        return applyDilation(applyThreshold(originalImage, filterParams.threshold));
+        result = applyDilation(applyThreshold(originalImage, filterParams.threshold));
+        break;
       case 'opening':
-        return applyOpening(applyThreshold(originalImage, filterParams.threshold));
+        result = applyOpening(applyThreshold(originalImage, filterParams.threshold));
+        break;
       case 'closing':
-        return applyClosing(applyThreshold(originalImage, filterParams.threshold));
+        result = applyClosing(applyThreshold(originalImage, filterParams.threshold));
+        break;
       case 'none':
       default:
-        return originalImage;
+        result = originalImage;
     }
+
+    // End processing indicator
+    setTimeout(() => setIsProcessing(false), 0);
+    return result;
   }, [originalImage, activeFilter, filterParams]);
 
   /**
@@ -640,13 +671,19 @@ function App() {
               message={loadingMessage || 'Loading image...'}
             />
           ) : (
-            <ImageCanvas
-              imageData={displayImage}
-              originalData={originalImage}
-              showOriginal={showOriginal}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
-            />
+            <>
+              <ImageCanvas
+                imageData={displayImage}
+                originalData={originalImage}
+                showOriginal={showOriginal}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              />
+              <ProcessingIndicator
+                isProcessing={isProcessing}
+                filterName={activeFilter !== 'none' ? activeFilter : undefined}
+              />
+            </>
           )}
 
           {/* Formula Panel */}
