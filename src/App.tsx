@@ -1,35 +1,317 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+/**
+ * ImageVisLab - Digital Image Processing Simulator
+ * 
+ * Main application component that orchestrates all functionality.
+ * Handles image loading, filter application, and user interactions.
+ * 
+ * @module App
+ * @author ImageVisLab Contributors
+ * @license MIT
+ */
+
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { ImageCanvas, Sidebar, PixelInspector } from './components';
+import type { FilterType, FilterParams } from './types';
+import {
+  applyNegative,
+  applyGamma,
+  applyLog,
+  applyQuantization,
+  applySampling,
+  applyEqualization,
+  getPixelInfo,
+  getNeighborhood,
+} from './utils/imageFilters';
+import './App.css';
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+/** Default filter parameters */
+const DEFAULT_FILTER_PARAMS: FilterParams = {
+  gamma: 1.0,
+  gammaConstant: 1.0,
+  logConstant: 1.0,
+  quantizationLevels: 256,
+  samplingFactor: 1,
+};
+
+// =============================================================================
+// Main Application Component
+// =============================================================================
 
 function App() {
-  const [count, setCount] = useState(0)
+  // ---------------------------------------------------------------------------
+  // State: Image
+  // ---------------------------------------------------------------------------
+  const [originalImage, setOriginalImage] = useState<ImageData | null>(null);
+  const [imageFileName, setImageFileName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+
+  // ---------------------------------------------------------------------------
+  // State: Filters
+  // ---------------------------------------------------------------------------
+  const [activeFilter, setActiveFilter] = useState<FilterType>('none');
+  const [filterParams, setFilterParams] = useState<FilterParams>(DEFAULT_FILTER_PARAMS);
+
+  // ---------------------------------------------------------------------------
+  // State: Pixel Inspector
+  // ---------------------------------------------------------------------------
+  const [pixelInfo, setPixelInfo] = useState<ReturnType<typeof getPixelInfo> | null>(null);
+  const [neighborhood, setNeighborhood] = useState<ReturnType<typeof getNeighborhood>>([]);
+  const [showOriginal, setShowOriginal] = useState(false);
+
+  // ---------------------------------------------------------------------------
+  // Refs
+  // ---------------------------------------------------------------------------
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ---------------------------------------------------------------------------
+  // Memoized: Processed Image
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Applies the active filter to the original image.
+   * Recalculates only when the image, filter type, or parameters change.
+   */
+  const processedImage = useMemo(() => {
+    if (!originalImage) return null;
+
+    switch (activeFilter) {
+      case 'negative':
+        return applyNegative(originalImage);
+      case 'gamma':
+        return applyGamma(originalImage, filterParams.gamma, filterParams.gammaConstant);
+      case 'log':
+        return applyLog(originalImage, filterParams.logConstant);
+      case 'quantization':
+        return applyQuantization(originalImage, filterParams.quantizationLevels);
+      case 'sampling':
+        return applySampling(originalImage, filterParams.samplingFactor);
+      case 'equalization':
+        return applyEqualization(originalImage);
+      case 'none':
+      default:
+        return originalImage;
+    }
+  }, [originalImage, activeFilter, filterParams]);
+
+  // ---------------------------------------------------------------------------
+  // Handlers: Image Loading
+  // ---------------------------------------------------------------------------
+
+  /** Opens the file picker dialog */
+  const handleLoadImage = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  /** Processes the selected image file */
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageFileName(file.name);
+    setIsLoading(true);
+    setLoadingMessage('Reading file...');
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setLoadingMessage('Decoding image...');
+
+      const img = new Image();
+      img.onload = () => {
+        setLoadingMessage('Processing pixels...');
+
+        // Use setTimeout to allow UI to update before heavy processing
+        setTimeout(() => {
+          // Create temporary canvas to extract ImageData
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            setIsLoading(false);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+          setOriginalImage(imageData);
+          setActiveFilter('none');
+          setFilterParams(DEFAULT_FILTER_PARAMS);
+          setPixelInfo(null);
+          setNeighborhood([]);
+          setIsLoading(false);
+          setLoadingMessage('');
+        }, 50);
+      };
+
+      img.onerror = () => {
+        setIsLoading(false);
+        setLoadingMessage('');
+        alert('Error loading image');
+      };
+
+      img.src = event.target?.result as string;
+    };
+
+    reader.onerror = () => {
+      setIsLoading(false);
+      setLoadingMessage('');
+      alert('Error reading file');
+    };
+
+    reader.readAsDataURL(file);
+
+    // Reset input to allow reloading the same file
+    e.target.value = '';
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Handlers: Filter Controls
+  // ---------------------------------------------------------------------------
+
+  /** Changes the active filter type */
+  const handleFilterChange = useCallback((filter: FilterType) => {
+    setActiveFilter(filter);
+  }, []);
+
+  /** Updates a specific filter parameter */
+  const handleParamChange = useCallback((param: keyof FilterParams, value: number) => {
+    setFilterParams(prev => ({ ...prev, [param]: value }));
+  }, []);
+
+  /** Resets all filters to default */
+  const handleReset = useCallback(() => {
+    setActiveFilter('none');
+    setFilterParams(DEFAULT_FILTER_PARAMS);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Handlers: Pixel Inspector
+  // ---------------------------------------------------------------------------
+
+  /** Updates pixel info when mouse moves over the canvas */
+  const handleMouseMove = useCallback((x: number, y: number) => {
+    if (!processedImage) return;
+
+    const info = getPixelInfo(processedImage, x, y);
+    setPixelInfo(info);
+
+    const neighbors = getNeighborhood(processedImage, x, y, 5);
+    setNeighborhood(neighbors);
+  }, [processedImage]);
+
+  /** Clears pixel info when mouse leaves the canvas */
+  const handleMouseLeave = useCallback(() => {
+    setPixelInfo(null);
+    setNeighborhood([]);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Effects: Keyboard Shortcuts
+  // ---------------------------------------------------------------------------
+
+  /** Toggle original image view with Space key */
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && originalImage) {
+        e.preventDefault();
+        setShowOriginal(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setShowOriginal(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [originalImage]);
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p className="loading-message">{loadingMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
+
+      {/* Sidebar: Filter Controls */}
+      <Sidebar
+        activeFilter={activeFilter}
+        filterParams={filterParams}
+        onFilterChange={handleFilterChange}
+        onParamChange={handleParamChange}
+        onLoadImage={handleLoadImage}
+        onReset={handleReset}
+        hasImage={!!originalImage}
+      />
+
+      {/* Main Area */}
+      <main className="main-area">
+        {/* Header: Image Info */}
+        {originalImage && (
+          <header className="main-header">
+            <div className="image-info">
+              <span className="filename">{imageFileName}</span>
+              <span className="dimensions">
+                {originalImage.width} x {originalImage.height} px
+              </span>
+            </div>
+            <div className="header-hint">
+              <kbd>Space</kbd> to view original
+            </div>
+          </header>
+        )}
+
+        {/* Canvas: Image Display */}
+        <ImageCanvas
+          imageData={processedImage}
+          originalData={originalImage}
+          showOriginal={showOriginal}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        />
+
+        {/* Pixel Inspector Panel */}
+        <PixelInspector
+          pixelInfo={pixelInfo}
+          neighborhood={neighborhood}
+          imageWidth={originalImage?.width}
+          imageHeight={originalImage?.height}
+        />
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
