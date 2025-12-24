@@ -11,6 +11,7 @@
 
 import React from 'react';
 import type { FilterType, FilterParams } from '../../types';
+import { LaTeXFormula } from '../LaTeXFormula';
 import './Sidebar.css';
 
 // =============================================================================
@@ -54,7 +55,7 @@ interface FilterOption {
 
 /**
  * Configuration for all available filters.
- * Each filter has a name, description, optional formula, and optional parameters.
+ * Each filter has a name, description, optional formula (LaTeX), and optional parameters.
  */
 const FILTERS: FilterOption[] = [
     {
@@ -72,9 +73,9 @@ const FILTERS: FilterOption[] = [
         id: 'gamma',
         name: 'Gamma Correction',
         description: 'Adjusts brightness curve',
-        formula: 's = c * r^g',
+        formula: 's = c \\cdot r^{\\gamma}',
         params: [
-            { key: 'gamma', label: 'g (Gamma)', min: 0.1, max: 5, step: 0.1 },
+            { key: 'gamma', label: 'γ (Gamma)', min: 0.1, max: 5, step: 0.1 },
             { key: 'gammaConstant', label: 'c (Constant)', min: 0.1, max: 2, step: 0.1 },
         ],
     },
@@ -82,7 +83,7 @@ const FILTERS: FilterOption[] = [
         id: 'log',
         name: 'Logarithmic',
         description: 'Expands dark tones',
-        formula: 's = c * log(1 + r)',
+        formula: 's = c \\cdot \\log(1 + r)',
         params: [
             { key: 'logConstant', label: 'c (Constant)', min: 0.1, max: 3, step: 0.1 },
         ],
@@ -91,7 +92,7 @@ const FILTERS: FilterOption[] = [
         id: 'quantization',
         name: 'Quantization',
         description: 'Reduces gray levels',
-        formula: 'k bits = 2^k levels',
+        formula: '2^k \\text{ levels}',
         params: [
             { key: 'quantizationLevels', label: 'Levels', min: 2, max: 256, step: 1 },
         ],
@@ -100,7 +101,7 @@ const FILTERS: FilterOption[] = [
         id: 'sampling',
         name: 'Subsampling',
         description: 'Reduces spatial resolution',
-        formula: 'Pixelation NxN',
+        formula: 'n \\times n \\text{ blocks}',
         params: [
             { key: 'samplingFactor', label: 'Factor', min: 1, max: 32, step: 1 },
         ],
@@ -109,7 +110,7 @@ const FILTERS: FilterOption[] = [
         id: 'equalization',
         name: 'Equalization',
         description: 'Equalizes histogram',
-        formula: 's_k = (L-1) * CDF(r_k)',
+        formula: 's_k = (L-1) \\cdot \\text{CDF}(r_k)',
     },
 ];
 
@@ -141,22 +142,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <h3 className="section-title">Image</h3>
                 <div className="action-buttons">
                     <button className="btn btn-primary" onClick={onLoadImage}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                             <polyline points="17,8 12,3 7,8" />
                             <line x1="12" y1="3" x2="12" y2="15" />
                         </svg>
                         Load Image
                     </button>
-                    {hasImage && (
-                        <button className="btn btn-secondary" onClick={onReset}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                                <path d="M3 3v5h5" />
-                            </svg>
-                            Reset
-                        </button>
-                    )}
+                    <button
+                        className="btn btn-secondary"
+                        onClick={onReset}
+                        disabled={!hasImage}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                            <path d="M3 3v5h5" />
+                        </svg>
+                        Reset
+                    </button>
                 </div>
             </div>
 
@@ -179,7 +182,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <p className="filter-description">{filter.description}</p>
 
                             {filter.formula && (
-                                <code className="filter-formula">{filter.formula}</code>
+                                <div className="filter-formula">
+                                    <LaTeXFormula formula={filter.formula} />
+                                </div>
                             )}
 
                             {/* Filter Parameters (sliders) */}
