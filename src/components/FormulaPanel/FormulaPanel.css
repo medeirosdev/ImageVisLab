@@ -13,7 +13,7 @@
    ============================================================================= */
 
 .formula-panel {
-    width: 280px;
+    width: 340px;
     display: flex;
     flex-direction: column;
     background: var(--color-bg-secondary);
