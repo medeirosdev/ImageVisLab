@@ -1,8 +1,7 @@
 /**
  * ImageVisLab - PixelInspector Styles
  * 
- * Styles for the pixel inspector panel including
- * magnifier grid, pixel info, and RGB channel bars.
+ * Styles for the pixel inspector panel with tabbed interface.
  * 
  * @author ImageVisLab Contributors
  * @license MIT
@@ -14,61 +13,120 @@
 
 .pixel-inspector {
     display: flex;
-    gap: var(--space-lg);
-    padding: var(--space-lg);
+    flex-direction: column;
     background: var(--color-bg-secondary);
     border-top: 1px solid var(--color-border);
     height: var(--inspector-height);
     overflow: hidden;
 }
 
-.pixel-inspector.empty {
+/* =============================================================================
+   Tab Navigation
+   ============================================================================= */
+
+.inspector-tabs {
+    display: flex;
+    background: var(--color-bg-tertiary);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.inspector-tab {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: var(--space-sm);
+    flex: 1;
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.inspector-tab:hover {
+    color: var(--color-text-secondary);
+    background: var(--color-bg-elevated);
+}
+
+.inspector-tab.active {
+    color: var(--color-accent-primary);
+    border-bottom-color: var(--color-accent-primary);
+    background: var(--color-bg-secondary);
+}
+
+.inspector-tab svg {
+    opacity: 0.7;
+}
+
+.inspector-tab.active svg {
+    opacity: 1;
 }
 
 /* =============================================================================
-   Empty State
+   Tab Content
    ============================================================================= */
 
-.inspector-placeholder {
+.tab-content {
+    flex: 1;
     display: flex;
-    flex-direction: column;
+    gap: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    overflow: hidden;
+}
+
+.tab-content-empty {
+    flex: 1;
+    display: flex;
     align-items: center;
-    gap: var(--space-md);
+    justify-content: center;
     color: var(--color-text-muted);
-}
-
-.inspector-placeholder svg {
-    opacity: 0.5;
-}
-
-.inspector-placeholder p {
     font-size: 0.875rem;
 }
 
 /* =============================================================================
-   Section Titles
+   Info Tab - Placeholder
    ============================================================================= */
 
-.inspector-title {
+.info-placeholder {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-sm);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: var(--space-md);
+    justify-content: center;
+    gap: var(--space-md);
+    color: var(--color-text-muted);
+    text-align: center;
+    flex: 1;
+}
+
+.info-placeholder svg {
+    opacity: 0.4;
 }
 
 /* =============================================================================
-   Magnifier Grid
+   Info Tab - Sections
    ============================================================================= */
 
-.inspector-magnifier {
+.info-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.section-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+/* =============================================================================
+   Info Tab - Magnifier
+   ============================================================================= */
+
+.magnifier-section {
     flex-shrink: 0;
 }
 
@@ -76,15 +134,15 @@
     display: grid;
     grid-template-columns: repeat(11, 1fr);
     gap: 1px;
-    padding: 4px;
+    padding: 2px;
     background: var(--color-bg-primary);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
 }
 
 .magnifier-pixel {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     transition: transform var(--transition-fast);
 }
 
@@ -95,142 +153,209 @@
 }
 
 .magnifier-pixel:hover {
-    transform: scale(1.3);
+    transform: scale(1.4);
     z-index: 2;
 }
 
 /* =============================================================================
-   Pixel Information Panel
+   Info Tab - Pixel Data
    ============================================================================= */
 
-.inspector-info {
+.pixel-data-section {
     flex: 1;
-    min-width: 0;
+    min-width: 200px;
 }
 
-.info-grid {
-    display: flex;
-    gap: var(--space-lg);
-    margin-bottom: var(--space-md);
-    flex-wrap: wrap;
+.pixel-data-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xs) var(--space-md);
+    margin-bottom: var(--space-sm);
 }
 
-.info-item {
+.data-item {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: 2px;
 }
 
-.info-label {
-    font-size: 0.6875rem;
+.data-label {
+    font-size: 0.625rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
 }
 
-.info-value {
-    font-size: 0.9375rem;
+.data-value {
+    font-size: 0.8125rem;
     color: var(--color-text-primary);
 }
 
-/* =============================================================================
-   Color Preview
-   ============================================================================= */
-
-.color-preview-container {
-    flex: 1;
-}
-
-.color-preview {
+/* Color Preview */
+.color-preview-large {
+    height: 32px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 36px;
-    min-width: 100px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    margin-bottom: var(--space-sm);
 }
 
-.hex-value {
+.color-label {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* =============================================================================
-   RGB Channel Bars
-   ============================================================================= */
-
-.channels-section {
+/* RGB Channels */
+.channels-grid {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
 }
 
-.channel {
+.channel-item {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
 }
 
-.channel-label {
-    width: 36px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
+.channel-name {
+    width: 16px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-align: center;
 }
 
-.channel-r .channel-label {
+.channel-r .channel-name {
     color: var(--color-channel-r);
 }
 
-.channel-g .channel-label {
+.channel-g .channel-name {
     color: var(--color-channel-g);
 }
 
-.channel-b .channel-label {
+.channel-b .channel-name {
     color: var(--color-channel-b);
 }
 
-.channel-gray .channel-label {
-    color: var(--color-text-muted);
-}
-
-.channel-bar {
+.channel-bar-container {
     flex: 1;
-    height: 8px;
+    height: 6px;
     background: var(--color-bg-primary);
     border-radius: var(--radius-full);
     overflow: hidden;
 }
 
-.channel-fill {
+.channel-bar-fill {
     height: 100%;
     transition: width var(--transition-fast);
 }
 
-.channel-r .channel-fill {
+.channel-r .channel-bar-fill {
     background: var(--color-channel-r);
 }
 
-.channel-g .channel-fill {
+.channel-g .channel-bar-fill {
     background: var(--color-channel-g);
 }
 
-.channel-b .channel-fill {
+.channel-b .channel-bar-fill {
     background: var(--color-channel-b);
 }
 
-.channel-gray .channel-fill {
-    background: linear-gradient(90deg, #333 0%, #fff 100%);
-}
-
 .channel-value {
-    width: 32px;
-    font-size: 0.8125rem;
+    width: 28px;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
     text-align: right;
     color: var(--color-text-secondary);
+}
+
+/* =============================================================================
+   Histogram Tab
+   ============================================================================= */
+
+.histogram-tab {
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.histogram-channel-selector {
+    display: flex;
+    gap: 4px;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.channel-btn {
+    flex: 1;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    color: var(--color-text-muted);
+}
+
+.channel-btn:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-tertiary);
+}
+
+.channel-btn.active {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+}
+
+.channel-btn.channel-r.active {
+    color: var(--color-channel-r);
+}
+
+.channel-btn.channel-g.active {
+    color: var(--color-channel-g);
+}
+
+.channel-btn.channel-b.active {
+    color: var(--color-channel-b);
+}
+
+.channel-btn.channel-all.active {
+    background: linear-gradient(90deg,
+            var(--color-channel-r),
+            var(--color-channel-g),
+            var(--color-channel-b));
+    color: white;
+}
+
+/* Histogram Comparison */
+.histogram-comparison {
+    display: flex;
+    gap: var(--space-lg);
+    flex: 1;
+    min-height: 0;
+}
+
+.histogram-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    min-width: 0;
+}
+
+.histogram-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    text-align: center;
 }
