@@ -360,10 +360,13 @@ function App() {
     setNeighborhood(neighbors);
   }, [animatedImage, processedImage]);
 
-  /** Clears pixel info when mouse leaves the canvas */
+  /** 
+   * Handler for mouse leaving the canvas.
+   * We intentionally do NOT clear pixel info here to allow users
+   * to interact with the inspector controls while data persists.
+   */
   const handleMouseLeave = useCallback(() => {
-    setPixelInfo(null);
-    setNeighborhood([]);
+    // Intentionally empty - keep last pixel info for inspection
   }, []);
 
   // ---------------------------------------------------------------------------
