@@ -16,3 +16,4 @@ export { FormulaPanel } from './FormulaPanel';
 export { LaTeXFormula } from './LaTeXFormula';
 export { ErrorBoundary } from './ErrorBoundary';
 export { LoadingSkeleton, ProcessingIndicator } from './LoadingSkeleton';
+export { StatusBar } from './StatusBar';
