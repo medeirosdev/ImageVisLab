@@ -15,31 +15,9 @@
 
 /**
  * Collection of commonly used convolution kernels.
+ * Only includes kernels that are actively used by the application.
  */
 export const KERNELS = {
-    /** 3x3 Box blur (mean filter) */
-    boxBlur3: [
-        [1 / 9, 1 / 9, 1 / 9],
-        [1 / 9, 1 / 9, 1 / 9],
-        [1 / 9, 1 / 9, 1 / 9],
-    ],
-
-    /** 5x5 Box blur */
-    boxBlur5: [
-        [1 / 25, 1 / 25, 1 / 25, 1 / 25, 1 / 25],
-        [1 / 25, 1 / 25, 1 / 25, 1 / 25, 1 / 25],
-        [1 / 25, 1 / 25, 1 / 25, 1 / 25, 1 / 25],
-        [1 / 25, 1 / 25, 1 / 25, 1 / 25, 1 / 25],
-        [1 / 25, 1 / 25, 1 / 25, 1 / 25, 1 / 25],
-    ],
-
-    /** 3x3 Gaussian blur (approximation) */
-    gaussian3: [
-        [1 / 16, 2 / 16, 1 / 16],
-        [2 / 16, 4 / 16, 2 / 16],
-        [1 / 16, 2 / 16, 1 / 16],
-    ],
-
     /** Sharpening kernel */
     sharpen: [
         [0, -1, 0],
@@ -53,14 +31,8 @@ export const KERNELS = {
         [1, -4, 1],
         [0, 1, 0],
     ],
-
-    /** Laplacian with diagonals */
-    laplacian8: [
-        [1, 1, 1],
-        [1, -8, 1],
-        [1, 1, 1],
-    ],
 };
+
 
 // =============================================================================
 // Kernel Generation

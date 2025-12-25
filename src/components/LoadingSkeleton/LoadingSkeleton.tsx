@@ -77,13 +77,38 @@ interface ProcessingIndicatorProps {
     isProcessing: boolean;
     /** Current filter being processed */
     filterName?: string;
+    /** Minimum time to show indicator (ms) - prevents flicker */
+    minDisplayTime?: number;
 }
 
 export const ProcessingIndicator: React.FC<ProcessingIndicatorProps> = ({
     isProcessing,
     filterName,
+    minDisplayTime = 300,
 }) => {
-    if (!isProcessing) return null;
+    const [visible, setVisible] = React.useState(false);
+    const showTimeRef = React.useRef<number>(0);
+
+    React.useEffect(() => {
+        if (isProcessing) {
+            // Show immediately when processing starts
+            setVisible(true);
+            showTimeRef.current = Date.now();
+        } else if (visible) {
+            // Calculate how long we've been visible
+            const elapsed = Date.now() - showTimeRef.current;
+            const remaining = Math.max(0, minDisplayTime - elapsed);
+
+            // Only hide after minimum display time
+            const timeout = setTimeout(() => {
+                setVisible(false);
+            }, remaining);
+
+            return () => clearTimeout(timeout);
+        }
+    }, [isProcessing, visible, minDisplayTime]);
+
+    if (!visible) return null;
 
     return (
         <div className="processing-indicator">

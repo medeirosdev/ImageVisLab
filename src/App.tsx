@@ -11,7 +11,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton, ProcessingIndicator } from './components';
-import { useHistory } from './hooks';
+import { useHistory, useImageWorker } from './hooks';
 import type { FilterType, FilterParams } from './types';
 import {
   applyNegative,
@@ -41,6 +41,17 @@ import {
   applyCustomFormula,
   applyCustomKernel,
 } from './utils/customFilters';
+import {
+  applySobelX,
+  applySobelY,
+  applySobelMagnitude,
+} from './utils/edgeDetection';
+import { applyMedian } from './utils/noiseReduction';
+import {
+  applyGrayscale,
+  applySepia,
+  applySwapChannels,
+} from './utils/colorFilters';
 import './App.css';
 
 // =============================================================================
@@ -65,6 +76,72 @@ const DEFAULT_FILTER_PARAMS: FilterParams = {
   ],
   customKernelSize: 3,
 };
+
+/**
+ * Synchronous image processing fallback when worker is not available.
+ */
+function processImageSync(
+  imageData: ImageData,
+  filter: FilterType,
+  params: FilterParams
+): ImageData {
+  switch (filter) {
+    case 'negative':
+      return applyNegative(imageData);
+    case 'gamma':
+      return applyGamma(imageData, params.gamma, params.gammaConstant);
+    case 'log':
+      return applyLog(imageData, params.logConstant);
+    case 'quantization':
+      return applyQuantization(imageData, params.quantizationLevels);
+    case 'sampling':
+      return applySampling(imageData, params.samplingFactor);
+    case 'equalization':
+      return applyEqualization(imageData);
+    case 'boxBlur':
+      return applyBoxBlur(imageData, params.kernelSize);
+    case 'gaussianBlur':
+      return applyGaussianBlur(imageData, params.kernelSize, params.gaussianSigma);
+    case 'sharpen':
+      return applySharpen(imageData);
+    case 'laplacian':
+      return applyLaplacian(imageData);
+    case 'threshold':
+      return applyThreshold(imageData, params.threshold);
+    case 'erosion':
+      return applyErosion(applyThreshold(imageData, params.threshold));
+    case 'dilation':
+      return applyDilation(applyThreshold(imageData, params.threshold));
+    case 'opening':
+      return applyOpening(applyThreshold(imageData, params.threshold));
+    case 'closing':
+      return applyClosing(applyThreshold(imageData, params.threshold));
+    case 'customFormula':
+      return applyCustomFormula(imageData, params.customFormula);
+    case 'customKernel':
+      return applyCustomKernel(imageData, params.customKernel);
+    // Edge Detection
+    case 'sobelX':
+      return applySobelX(imageData);
+    case 'sobelY':
+      return applySobelY(imageData);
+    case 'sobelMagnitude':
+      return applySobelMagnitude(imageData);
+    // Noise Reduction
+    case 'median':
+      return applyMedian(imageData, params.kernelSize);
+    // Color Filters
+    case 'grayscale':
+      return applyGrayscale(imageData);
+    case 'sepia':
+      return applySepia(imageData);
+    case 'swapChannels':
+      return applySwapChannels(imageData);
+    case 'none':
+    default:
+      return imageData;
+  }
+}
 
 // =============================================================================
 // Main Application Component
@@ -114,92 +191,84 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // ---------------------------------------------------------------------------
+  // State: Resize Modal
+  // ---------------------------------------------------------------------------
+  const [resizeModal, setResizeModal] = useState<{
+    show: boolean;
+    originalSize: { width: number; height: number };
+    newSize: { width: number; height: number };
+    onConfirm: (() => void) | null;
+    onCancel: (() => void) | null;
+  }>({
+    show: false,
+    originalSize: { width: 0, height: 0 },
+    newSize: { width: 0, height: 0 },
+    onConfirm: null,
+    onCancel: null,
+  });
+
+  // ---------------------------------------------------------------------------
   // Refs
   // ---------------------------------------------------------------------------
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ---------------------------------------------------------------------------
-  // Memoized: Processed Image
+  // Web Worker for Image Processing
   // ---------------------------------------------------------------------------
+  const { processImage: workerProcess, isReady: workerReady } = useImageWorker();
+  const [processedImage, setProcessedImage] = useState<ImageData | null>(null);
+  const [, setProcessingTime] = useState<number | null>(null);
+
 
   /**
-   * Applies the active filter to the original image.
-   * Recalculates only when the image, filter type, or parameters change.
+   * Applies the active filter to the original image using Web Worker.
+   * Runs in a separate thread to keep UI responsive.
    */
-  const processedImage = useMemo(() => {
-    if (!originalImage) return null;
-
-    // Start processing indicator for potentially slow operations
-    const slowFilters = ['gaussianBlur', 'boxBlur', 'erosion', 'dilation', 'opening', 'closing'];
-    if (slowFilters.includes(activeFilter)) {
-      setIsProcessing(true);
+  useEffect(() => {
+    if (!originalImage) {
+      setProcessedImage(null);
+      return;
     }
 
-    let result: ImageData;
-    switch (activeFilter) {
-      case 'negative':
-        result = applyNegative(originalImage);
-        break;
-      case 'gamma':
-        result = applyGamma(originalImage, filterParams.gamma, filterParams.gammaConstant);
-        break;
-      case 'log':
-        result = applyLog(originalImage, filterParams.logConstant);
-        break;
-      case 'quantization':
-        result = applyQuantization(originalImage, filterParams.quantizationLevels);
-        break;
-      case 'sampling':
-        result = applySampling(originalImage, filterParams.samplingFactor);
-        break;
-      case 'equalization':
-        result = applyEqualization(originalImage);
-        break;
-      // Spatial Filters (Convolution)
-      case 'boxBlur':
-        result = applyBoxBlur(originalImage, filterParams.kernelSize);
-        break;
-      case 'gaussianBlur':
-        result = applyGaussianBlur(originalImage, filterParams.kernelSize, filterParams.gaussianSigma);
-        break;
-      case 'sharpen':
-        result = applySharpen(originalImage);
-        break;
-      case 'laplacian':
-        result = applyLaplacian(originalImage);
-        break;
-      // Morphology Operations
-      case 'threshold':
-        result = applyThreshold(originalImage, filterParams.threshold);
-        break;
-      case 'erosion':
-        result = applyErosion(applyThreshold(originalImage, filterParams.threshold));
-        break;
-      case 'dilation':
-        result = applyDilation(applyThreshold(originalImage, filterParams.threshold));
-        break;
-      case 'opening':
-        result = applyOpening(applyThreshold(originalImage, filterParams.threshold));
-        break;
-      case 'closing':
-        result = applyClosing(applyThreshold(originalImage, filterParams.threshold));
-        break;
-      // Custom Operations
-      case 'customFormula':
-        result = applyCustomFormula(originalImage, filterParams.customFormula);
-        break;
-      case 'customKernel':
-        result = applyCustomKernel(originalImage, filterParams.customKernel);
-        break;
-      case 'none':
-      default:
-        result = originalImage;
+    // For 'none' filter, just use original
+    if (activeFilter === 'none') {
+      setProcessedImage(originalImage);
+      setIsProcessing(false);
+      return;
     }
 
-    // End processing indicator
-    setTimeout(() => setIsProcessing(false), 0);
-    return result;
-  }, [originalImage, activeFilter, filterParams]);
+    // Start processing
+    setIsProcessing(true);
+    const startTime = performance.now();
+
+    // Clone the image data since worker will transfer the buffer
+    const clonedData = new Uint8ClampedArray(originalImage.data);
+    const clonedImage = new ImageData(clonedData, originalImage.width, originalImage.height);
+
+    if (workerReady) {
+      // Use Web Worker for processing
+      workerProcess(clonedImage, activeFilter, filterParams)
+        .then((result) => {
+          setProcessedImage(result);
+          setProcessingTime(performance.now() - startTime);
+          setIsProcessing(false);
+        })
+        .catch((error) => {
+          console.error('Worker error, falling back to main thread:', error);
+          // Fallback to synchronous processing
+          const result = processImageSync(originalImage, activeFilter, filterParams);
+          setProcessedImage(result);
+          setProcessingTime(performance.now() - startTime);
+          setIsProcessing(false);
+        });
+    } else {
+      // Fallback: synchronous processing on main thread
+      const result = processImageSync(originalImage, activeFilter, filterParams);
+      setProcessedImage(result);
+      setProcessingTime(performance.now() - startTime);
+      setIsProcessing(false);
+    }
+  }, [originalImage, activeFilter, filterParams, workerReady, workerProcess]);
 
   /**
    * Calculates histogram data for the processed image.
@@ -347,52 +416,84 @@ function App() {
 
       const img = new Image();
       img.onload = () => {
-        // Check for very large images (> 4000px in any dimension)
-        const MAX_DIMENSION = 4000;
-        const MAX_PIXELS = 16000000; // 16 megapixels
+        const RECOMMENDED_MAX = 1024; // Recommended max dimension
+        const ABSOLUTE_MAX = 2048;    // Hard limit
+        const MAX_PIXELS = 4000000;   // 4 megapixels
         const totalPixels = img.width * img.height;
+        const maxDimension = Math.max(img.width, img.height);
 
-        if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
+        // Hard limits - reject completely
+        if (img.width > ABSOLUTE_MAX || img.height > ABSOLUTE_MAX || totalPixels > MAX_PIXELS) {
           setIsLoading(false);
           setLoadingMessage('');
-          alert(`Image too large (${img.width}x${img.height}). Maximum dimension is ${MAX_DIMENSION}px.`);
+          alert(`Image too large (${img.width}x${img.height}). Maximum is ${ABSOLUTE_MAX}px or ${MAX_PIXELS / 1000000}MP.`);
           return;
         }
 
-        if (totalPixels > MAX_PIXELS) {
+        // Helper function to process image with optional resize
+        const processImage = (sourceImg: HTMLImageElement, targetWidth: number, targetHeight: number) => {
+          setLoadingMessage('Processing pixels...');
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const canvas = document.createElement('canvas');
+              canvas.width = targetWidth;
+              canvas.height = targetHeight;
+
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                setIsLoading(false);
+                return;
+              }
+
+              // Use high quality image smoothing for resize
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+              ctx.drawImage(sourceImg, 0, 0, targetWidth, targetHeight);
+
+              const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+
+              setOriginalImage(imageData);
+              setActiveFilter('none');
+              setFilterParams(DEFAULT_FILTER_PARAMS);
+              setPixelInfo(null);
+              setNeighborhood([]);
+              setIsLoading(false);
+              setLoadingMessage('');
+              handleResetAnimation();
+            });
+          });
+        };
+
+        // Check if resize is recommended
+        if (maxDimension > RECOMMENDED_MAX) {
+          const scale = RECOMMENDED_MAX / maxDimension;
+          const newWidth = Math.round(img.width * scale);
+          const newHeight = Math.round(img.height * scale);
+
+          // Show custom modal instead of browser confirm
           setIsLoading(false);
-          setLoadingMessage('');
-          alert(`Image has too many pixels (${(totalPixels / 1000000).toFixed(1)}MP). Maximum is ${MAX_PIXELS / 1000000}MP.`);
-          return;
+          setResizeModal({
+            show: true,
+            originalSize: { width: img.width, height: img.height },
+            newSize: { width: newWidth, height: newHeight },
+            onConfirm: () => {
+              setResizeModal(prev => ({ ...prev, show: false }));
+              setIsLoading(true);
+              setLoadingMessage(`Redimensionando para ${newWidth}x${newHeight}...`);
+              processImage(img, newWidth, newHeight);
+            },
+            onCancel: () => {
+              setResizeModal(prev => ({ ...prev, show: false }));
+              setIsLoading(true);
+              setLoadingMessage('Processando tamanho original...');
+              processImage(img, img.width, img.height);
+            },
+          });
+        } else {
+          // Image is small enough, process normally
+          processImage(img, img.width, img.height);
         }
-
-        setLoadingMessage('Processing pixels...');
-
-        // Use setTimeout to allow UI to update before heavy processing
-        setTimeout(() => {
-          // Create temporary canvas to extract ImageData
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            setIsLoading(false);
-            return;
-          }
-
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, img.width, img.height);
-
-          setOriginalImage(imageData);
-          setActiveFilter('none');
-          setFilterParams(DEFAULT_FILTER_PARAMS);
-          setPixelInfo(null);
-          setNeighborhood([]);
-          setIsLoading(false);
-          setLoadingMessage('');
-          handleResetAnimation();
-        }, 50);
       };
 
       img.onerror = () => {
@@ -632,6 +733,40 @@ function App() {
           <div className="loading-content">
             <div className="loading-spinner"></div>
             <p className="loading-message">{loadingMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Resize Modal */}
+      {resizeModal.show && (
+        <div className="resize-modal-overlay">
+          <div className="resize-modal">
+            <div className="resize-modal-icon">⚠️</div>
+            <h2 className="resize-modal-title">Imagem Grande Detectada</h2>
+            <p className="resize-modal-size">
+              <span className="size-original">{resizeModal.originalSize.width} × {resizeModal.originalSize.height}</span>
+            </p>
+            <p className="resize-modal-warning">
+              Imagens grandes podem causar lentidão ou travamento do navegador.
+            </p>
+            <div className="resize-modal-recommend">
+              <span className="recommend-label">Tamanho recomendado:</span>
+              <span className="recommend-size">{resizeModal.newSize.width} × {resizeModal.newSize.height}</span>
+            </div>
+            <div className="resize-modal-buttons">
+              <button
+                className="resize-btn resize-btn-primary"
+                onClick={resizeModal.onConfirm || undefined}
+              >
+                Redimensionar
+              </button>
+              <button
+                className="resize-btn resize-btn-secondary"
+                onClick={resizeModal.onCancel || undefined}
+              >
+                Manter Original
+              </button>
+            </div>
           </div>
         </div>
       )}
