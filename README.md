@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 <p align="center">
-  <img src="./docs/screenshots/interfaceinicial.jpg" alt="ImageVisLab Interface" width="800">
+  <img src="./docs/screenshots/interfaceinicial.png" alt="ImageVisLab Interface" width="800">
 </p>
 
 ## Overview
