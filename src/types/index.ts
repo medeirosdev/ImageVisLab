@@ -165,3 +165,40 @@ export type NeighborType = 'N4' | 'ND' | 'N8';
  * - chessboard: max(|x1-x2|, |y1-y2|) (D8)
  */
 export type DistanceMetric = 'euclidean' | 'cityBlock' | 'chessboard';
+
+// =============================================================================
+// Step-by-Step Mode Types
+// =============================================================================
+
+/**
+ * Represents a single step in a filter algorithm.
+ */
+export interface FilterStep {
+    /** Step number (1-indexed) */
+    stepNumber: number;
+    /** Total number of steps */
+    totalSteps: number;
+    /** Step title */
+    title: string;
+    /** Detailed description of what this step does */
+    description: string;
+    /** LaTeX formula for this step (optional) */
+    formula?: string;
+    /** The intermediate result image data */
+    imageData: ImageData;
+}
+
+/**
+ * Information about step-by-step processing for a filter.
+ */
+export interface StepByStepInfo {
+    /** Filter type this info applies to */
+    filter: FilterType;
+    /** Whether this filter supports step-by-step mode */
+    supported: boolean;
+    /** Total number of steps */
+    totalSteps: number;
+    /** Names of each step */
+    stepNames: string[];
+}
+

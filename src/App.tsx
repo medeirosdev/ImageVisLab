@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton, ProcessingIndicator } from './components';
+import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton, ProcessingIndicator, StepByStepPanel } from './components';
 import { useHistory, useImageWorker } from './hooks';
 import type { FilterType, FilterParams } from './types';
 import {
@@ -184,6 +184,12 @@ function App() {
   const [animationProgress, setAnimationProgress] = useState(0);
   const [animatedImage, setAnimatedImage] = useState<ImageData | null>(null);
   const animationRef = useRef<number | null>(null);
+
+  // ---------------------------------------------------------------------------
+  // State: Step-by-Step Mode
+  // ---------------------------------------------------------------------------
+  const [stepByStepActive, setStepByStepActive] = useState(false);
+  const [stepImage, setStepImage] = useState<ImageData | null>(null);
 
   // ---------------------------------------------------------------------------
   // State: Processing
@@ -719,7 +725,7 @@ function App() {
   // ---------------------------------------------------------------------------
   // Determine which image to display
   // ---------------------------------------------------------------------------
-  const displayImage = animatedImage || processedImage;
+  const displayImage = stepImage || animatedImage || processedImage;
 
   // ---------------------------------------------------------------------------
   // Render
@@ -852,6 +858,16 @@ function App() {
             onChangeMode={setAnimationMode}
             onChangeSpeed={setAnimationSpeed}
             onResetAnimation={handleResetAnimation}
+          />
+
+          {/* Step-by-Step Educational Mode */}
+          <StepByStepPanel
+            activeFilter={activeFilter}
+            originalImage={originalImage}
+            threshold={filterParams.threshold}
+            onStepImageChange={setStepImage}
+            isActive={stepByStepActive}
+            onToggle={() => setStepByStepActive(!stepByStepActive)}
           />
         </div>
 

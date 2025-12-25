@@ -1,0 +1,212 @@
+/**
+ * StepByStepPanel Styles
+ * Collapsible panel design
+ */
+
+.step-by-step-panel {
+    background: rgba(15, 15, 25, 0.8);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    margin-top: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.step-by-step-panel.active {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+.step-by-step-panel.disabled {
+    opacity: 0.6;
+}
+
+/* Collapsed Header - Always Visible */
+.step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.step-header:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.step-header h4 {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.step-header h4 .expand-icon {
+    font-size: 0.7rem;
+    transition: transform 0.3s;
+}
+
+.step-by-step-panel.active .step-header h4 .expand-icon {
+    transform: rotate(90deg);
+}
+
+.step-header h4 .expand-icon {
+    color: #64748b;
+}
+
+.not-supported {
+    font-size: 0.7rem;
+    color: #475569;
+    font-style: italic;
+}
+
+.toggle-btn {
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    border: none;
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-btn.off {
+    background: rgba(100, 116, 139, 0.2);
+    color: #64748b;
+}
+
+.toggle-btn.on {
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    color: white;
+}
+
+.toggle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Collapsible Content */
+.step-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 0.75rem;
+}
+
+.step-by-step-panel.active .step-content {
+    max-height: 500px;
+    padding: 0 0.75rem 0.75rem;
+}
+
+/* Navigation */
+.step-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.nav-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.step-indicator {
+    font-size: 0.75rem;
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+/* Progress */
+.step-progress {
+    height: 3px;
+    background: rgba(100, 116, 139, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.step-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+/* Content */
+.step-title {
+    margin: 0 0 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.step-formula {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    overflow-x: auto;
+    font-size: 0.9em;
+}
+
+.step-description {
+    margin: 0 0 0.75rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+/* Breadcrumb */
+.step-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+}
+
+.breadcrumb-item {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.65rem;
+    border-radius: 4px;
+    background: rgba(100, 116, 139, 0.2);
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.breadcrumb-item:hover {
+    background: rgba(100, 116, 139, 0.3);
+}
+
+.breadcrumb-item.current {
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    color: white;
+}
+
+.breadcrumb-item.completed {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
