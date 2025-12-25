@@ -52,6 +52,7 @@ import {
   applySepia,
   applySwapChannels,
 } from './utils/colorFilters';
+import { applyFFTSpectrum } from './utils/fft';
 import './App.css';
 
 // =============================================================================
@@ -137,6 +138,9 @@ function processImageSync(
       return applySepia(imageData);
     case 'swapChannels':
       return applySwapChannels(imageData);
+    // Frequency Domain
+    case 'fftSpectrum':
+      return applyFFTSpectrum(imageData);
     case 'none':
     default:
       return imageData;

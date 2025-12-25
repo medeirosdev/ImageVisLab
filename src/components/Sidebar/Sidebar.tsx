@@ -288,6 +288,18 @@ const FILTER_CATEGORIES: FilterCategory[] = [
             },
         ],
     },
+    {
+        id: 'frequency',
+        name: 'Frequency Domain',
+        filters: [
+            {
+                id: 'fftSpectrum',
+                name: 'FFT Spectrum',
+                description: 'Visualize frequency components',
+                formula: 'F(u,v) = \\sum f \\cdot e^{-j2\\pi(ux/M + vy/N)}',
+            },
+        ],
+    },
 ];
 
 // =============================================================================
