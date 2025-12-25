@@ -1,0 +1,159 @@
+/**
+ * StatusBar - Styles
+ * 
+ * Compact horizontal bar displaying image statistics.
+ * Dark theme with subtle separators and hover effects.
+ */
+
+/* =============================================================================
+   Container
+   ============================================================================= */
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-lg);
+    background: var(--color-bg-secondary);
+    border-top: 1px solid var(--color-border);
+    height: 32px;
+    min-height: 32px;
+    font-size: 0.8125rem;
+    font-family: var(--font-mono);
+    user-select: none;
+}
+
+.status-bar--empty {
+    justify-content: center;
+}
+
+.status-bar__placeholder {
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+    font-style: italic;
+    font-size: 0.75rem;
+}
+
+/* =============================================================================
+   Items
+   ============================================================================= */
+
+.status-bar__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.15s ease;
+    cursor: default;
+}
+
+.status-bar__item:hover {
+    background: var(--color-bg-tertiary);
+}
+
+.status-bar__label {
+    color: var(--color-accent-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.status-bar__value {
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.status-bar__unit {
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
+    margin-left: 1px;
+}
+
+/* =============================================================================
+   Dividers
+   ============================================================================= */
+
+.status-bar__divider {
+    width: 1px;
+    height: 14px;
+    background: var(--color-border);
+    opacity: 0.5;
+}
+
+/* =============================================================================
+   Special Items
+   ============================================================================= */
+
+/* Entropy - highlight with gradient */
+.status-bar__item--entropy .status-bar__label {
+    background: linear-gradient(135deg, #10b981, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Range - subtle different color */
+.status-bar__item--range .status-bar__label {
+    color: var(--color-text-secondary);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Pixels - muted */
+.status-bar__item--pixels .status-bar__label {
+    color: var(--color-text-secondary);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* =============================================================================
+   Original Indicator
+   ============================================================================= */
+
+.status-bar__original-indicator {
+    margin-left: auto;
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-sm);
+    color: #f59e0b;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* =============================================================================
+   Responsive
+   ============================================================================= */
+
+@media (max-width: 900px) {
+    .status-bar {
+        gap: var(--space-xs);
+        padding: var(--space-xs) var(--space-sm);
+        font-size: 0.75rem;
+    }
+
+    .status-bar__item {
+        padding: 2px 4px;
+        gap: 2px;
+    }
+
+    /* Hide less important items on small screens */
+    .status-bar__item--pixels,
+    .status-bar__item--range {
+        display: none;
+    }
+
+    .status-bar__divider:nth-last-child(-n+4) {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .status-bar__unit {
+        display: none;
+    }
+}

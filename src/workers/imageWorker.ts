@@ -53,6 +53,8 @@ import {
     applySwapChannels,
 } from '../utils/colorFilters';
 
+import { applyFFTSpectrum } from '../utils/fft';
+
 import type { FilterType, FilterParams } from '../types';
 
 // =============================================================================
@@ -146,6 +148,10 @@ function processImage(
             return applySepia(imageData);
         case 'swapChannels':
             return applySwapChannels(imageData);
+
+        // Frequency Domain
+        case 'fftSpectrum':
+            return applyFFTSpectrum(imageData);
 
         // No filter
         case 'none':

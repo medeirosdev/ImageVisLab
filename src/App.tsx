@@ -10,7 +10,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton, ProcessingIndicator } from './components';
+import { ImageCanvas, Sidebar, PixelInspector, FormulaPanel, LoadingSkeleton, ProcessingIndicator, StatusBar } from './components';
 import { useHistory, useImageWorker } from './hooks';
 import type { FilterType, FilterParams } from './types';
 import {
@@ -52,6 +52,7 @@ import {
   applySepia,
   applySwapChannels,
 } from './utils/colorFilters';
+import { applyFFTSpectrum } from './utils/fft';
 import './App.css';
 
 // =============================================================================
@@ -137,6 +138,9 @@ function processImageSync(
       return applySepia(imageData);
     case 'swapChannels':
       return applySwapChannels(imageData);
+    // Frequency Domain
+    case 'fftSpectrum':
+      return applyFFTSpectrum(imageData);
     case 'none':
     default:
       return imageData;
@@ -864,6 +868,13 @@ function App() {
           histogramData={histogramData}
           originalHistogramData={originalHistogramData}
           hasImage={!!originalImage}
+        />
+
+        {/* Status Bar: Image Statistics */}
+        <StatusBar
+          imageData={displayImage}
+          originalData={originalImage}
+          showOriginal={showOriginal}
         />
       </main>
     </div>

@@ -114,7 +114,9 @@ export type FilterType =
     | 'closing'
     // Custom Operations
     | 'customFormula'
-    | 'customKernel';
+    | 'customKernel'
+    // Frequency Domain
+    | 'fftSpectrum';
 
 // =============================================================================
 // Application State Types

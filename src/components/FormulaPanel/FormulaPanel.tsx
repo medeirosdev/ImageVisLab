@@ -322,6 +322,20 @@ const getFormulaInfo = (
                 ],
             };
 
+        // Frequency Domain
+        case 'fftSpectrum':
+            return {
+                name: '2D Fourier Transform (FFT)',
+                latex: 'F(u,v) = \\sum_{x=0}^{M-1} \\sum_{y=0}^{N-1} f(x,y) \\cdot e^{-j2\\pi(ux/M + vy/N)}',
+                description: 'Decomposes image into frequency components. Center shows low frequencies (smooth areas), edges show high frequencies (details/edges).',
+                variables: [
+                    { symbol: 'F(u,v)', meaning: 'Frequency component' },
+                    { symbol: 'f(x,y)', meaning: 'Spatial pixel value' },
+                    { symbol: 'u, v', meaning: 'Frequency coordinates' },
+                    { symbol: 'M, N', meaning: 'Image dimensions' },
+                ],
+            };
+
         case 'none':
         default:
             return {
