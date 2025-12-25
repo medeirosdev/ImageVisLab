@@ -208,6 +208,69 @@ const FILTER_CATEGORIES: FilterCategory[] = [
         ],
     },
     {
+        id: 'edge',
+        name: 'Edge Detection',
+        filters: [
+            {
+                id: 'sobelX',
+                name: 'Sobel X',
+                description: 'Detects vertical edges',
+                formula: 'G_x = \\begin{bmatrix} -1 & 0 & 1 \\\\ -2 & 0 & 2 \\\\ -1 & 0 & 1 \\end{bmatrix}',
+            },
+            {
+                id: 'sobelY',
+                name: 'Sobel Y',
+                description: 'Detects horizontal edges',
+                formula: 'G_y = \\begin{bmatrix} -1 & -2 & -1 \\\\ 0 & 0 & 0 \\\\ 1 & 2 & 1 \\end{bmatrix}',
+            },
+            {
+                id: 'sobelMagnitude',
+                name: 'Sobel Magnitude',
+                description: 'Combined edge magnitude',
+                formula: 'G = \\sqrt{G_x^2 + G_y^2}',
+            },
+        ],
+    },
+    {
+        id: 'noise',
+        name: 'Noise Reduction',
+        filters: [
+            {
+                id: 'median',
+                name: 'Median Filter',
+                description: 'Removes salt-and-pepper noise',
+                formula: 's = \\text{median}(N)',
+                params: [
+                    { key: 'kernelSize', label: 'Size', min: 3, max: 7, step: 2 },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'color',
+        name: 'Color Filters',
+        filters: [
+            {
+                id: 'grayscale',
+                name: 'Grayscale',
+                description: 'Converts to black and white',
+                formula: 'Y = 0.299R + 0.587G + 0.114B',
+            },
+            {
+                id: 'sepia',
+                name: 'Sepia',
+                description: 'Vintage brownish tone',
+                formula: '\\begin{bmatrix} 0.393 & 0.769 & 0.189 \\\\ 0.349 & 0.686 & 0.168 \\\\ 0.272 & 0.534 & 0.131 \\end{bmatrix}',
+            },
+            {
+                id: 'swapChannels',
+                name: 'Swap RGB',
+                description: 'Rotates color channels',
+                formula: 'R \\rightarrow G \\rightarrow B \\rightarrow R',
+            },
+        ],
+    },
+    {
         id: 'custom',
         name: 'Custom Operations',
         filters: [
@@ -246,9 +309,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     canRedo,
     hasImage,
 }) => {
-    // Track which categories are expanded
+    // Track which categories are expanded (all collapsed by default)
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-        new Set(['point', 'spatial'])
+        new Set()
     );
 
     // Track About modal visibility

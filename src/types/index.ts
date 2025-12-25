@@ -96,6 +96,16 @@ export type FilterType =
     | 'gaussianBlur'
     | 'sharpen'
     | 'laplacian'
+    // Edge Detection
+    | 'sobelX'
+    | 'sobelY'
+    | 'sobelMagnitude'
+    // Noise Reduction
+    | 'median'
+    // Color Filters
+    | 'grayscale'
+    | 'sepia'
+    | 'swapChannels'
     // Morphology Operations
     | 'threshold'
     | 'erosion'

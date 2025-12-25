@@ -39,6 +39,20 @@ import {
     applyCustomKernel,
 } from '../utils/customFilters';
 
+import {
+    applySobelX,
+    applySobelY,
+    applySobelMagnitude,
+} from '../utils/edgeDetection';
+
+import { applyMedian } from '../utils/noiseReduction';
+
+import {
+    applyGrayscale,
+    applySepia,
+    applySwapChannels,
+} from '../utils/colorFilters';
+
 import type { FilterType, FilterParams } from '../types';
 
 // =============================================================================
@@ -112,6 +126,26 @@ function processImage(
             return applyCustomFormula(imageData, params.customFormula);
         case 'customKernel':
             return applyCustomKernel(imageData, params.customKernel);
+
+        // Edge Detection
+        case 'sobelX':
+            return applySobelX(imageData);
+        case 'sobelY':
+            return applySobelY(imageData);
+        case 'sobelMagnitude':
+            return applySobelMagnitude(imageData);
+
+        // Noise Reduction
+        case 'median':
+            return applyMedian(imageData, params.kernelSize);
+
+        // Color Filters
+        case 'grayscale':
+            return applyGrayscale(imageData);
+        case 'sepia':
+            return applySepia(imageData);
+        case 'swapChannels':
+            return applySwapChannels(imageData);
 
         // No filter
         case 'none':

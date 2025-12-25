@@ -240,6 +240,88 @@ const getFormulaInfo = (
                 ],
             };
 
+        // Edge Detection
+        case 'sobelX':
+            return {
+                name: 'Sobel X (Vertical Edges)',
+                latex: 'G_x = \\begin{bmatrix} -1 & 0 & 1 \\\\ -2 & 0 & 2 \\\\ -1 & 0 & 1 \\end{bmatrix} * f',
+                description: 'Detects vertical edges using horizontal gradient. Highlights left-right transitions.',
+                variables: [
+                    { symbol: 'G_x', meaning: 'Horizontal gradient' },
+                    { symbol: 'f', meaning: 'Input image' },
+                ],
+            };
+
+        case 'sobelY':
+            return {
+                name: 'Sobel Y (Horizontal Edges)',
+                latex: 'G_y = \\begin{bmatrix} -1 & -2 & -1 \\\\ 0 & 0 & 0 \\\\ 1 & 2 & 1 \\end{bmatrix} * f',
+                description: 'Detects horizontal edges using vertical gradient. Highlights top-bottom transitions.',
+                variables: [
+                    { symbol: 'G_y', meaning: 'Vertical gradient' },
+                    { symbol: 'f', meaning: 'Input image' },
+                ],
+            };
+
+        case 'sobelMagnitude':
+            return {
+                name: 'Sobel Magnitude',
+                latex: 'G = \\sqrt{G_x^2 + G_y^2}',
+                description: 'Combines horizontal and vertical gradients to find all edges.',
+                variables: [
+                    { symbol: 'G', meaning: 'Edge magnitude' },
+                    { symbol: 'G_x', meaning: 'Horizontal gradient' },
+                    { symbol: 'G_y', meaning: 'Vertical gradient' },
+                ],
+            };
+
+        // Noise Reduction
+        case 'median':
+            return {
+                name: 'Median Filter',
+                latex: 's = \\text{median}\\{f(x+i, y+j) | i,j \\in N\\}',
+                description: 'Replaces each pixel with the median of its neighborhood. Excellent for salt-and-pepper noise.',
+                variables: [
+                    { symbol: 's', meaning: 'Output pixel' },
+                    { symbol: 'N', meaning: 'Neighborhood', value: `${params.kernelSize}×${params.kernelSize}` },
+                ],
+            };
+
+        // Color Filters
+        case 'grayscale':
+            return {
+                name: 'Grayscale Conversion',
+                latex: 'Y = 0.299R + 0.587G + 0.114B',
+                description: 'Converts to grayscale using luminance formula (ITU-R BT.601). Weights reflect human eye sensitivity.',
+                variables: [
+                    { symbol: 'Y', meaning: 'Luminance output' },
+                    { symbol: 'R, G, B', meaning: 'Color channels' },
+                ],
+            };
+
+        case 'sepia':
+            return {
+                name: 'Sepia Tone',
+                latex: '\\begin{bmatrix} R\' \\\\ G\' \\\\ B\' \\end{bmatrix} = \\begin{bmatrix} 0.393 & 0.769 & 0.189 \\\\ 0.349 & 0.686 & 0.168 \\\\ 0.272 & 0.534 & 0.131 \\end{bmatrix} \\begin{bmatrix} R \\\\ G \\\\ B \\end{bmatrix}',
+                description: 'Applies a vintage brownish tone reminiscent of old photographs.',
+                variables: [
+                    { symbol: "R', G', B'", meaning: 'Output channels' },
+                    { symbol: 'R, G, B', meaning: 'Input channels' },
+                ],
+            };
+
+        case 'swapChannels':
+            return {
+                name: 'RGB Channel Swap',
+                latex: 'R \\rightarrow G \\rightarrow B \\rightarrow R',
+                description: 'Rotates color channels creating a psychedelic color shift effect.',
+                variables: [
+                    { symbol: 'R → G', meaning: 'Red becomes Green' },
+                    { symbol: 'G → B', meaning: 'Green becomes Blue' },
+                    { symbol: 'B → R', meaning: 'Blue becomes Red' },
+                ],
+            };
+
         case 'none':
         default:
             return {
