@@ -44,11 +44,32 @@ ImageVisLab is a visual educational tool that helps students understand digital 
 | Opening | `(A - B) + B` | Removes small white noise |
 | Closing | `(A + B) - B` | Fills small black holes |
 
+### Edge Detection (4 filters)
+| Filter | Formula | Description |
+|--------|---------|-------------|
+| Sobel X | `Gx` kernel | Detects vertical edges |
+| Sobel Y | `Gy` kernel | Detects horizontal edges |
+| Sobel Magnitude | `√(Gx² + Gy²)` | Combined edge strength |
+| Median | `median(N)` | Removes salt-and-pepper noise |
+
+### Color Filters (3 filters)
+| Filter | Formula | Description |
+|--------|---------|-------------|
+| Grayscale | `0.299R + 0.587G + 0.114B` | Luminance conversion |
+| Sepia | Matrix transform | Vintage brownish tone |
+| Swap RGB | `R→G→B→R` | Rotates color channels |
+
+### Frequency Domain (1 filter)
+| Filter | Formula | Description |
+|--------|---------|-------------|
+| FFT Spectrum | `F(u,v) = Σf·e^(-j2π...)` | Visualizes frequency components |
+
 ### Inspection Tools
 - **Pixel Inspector** - RGB/Hex values with visual bars
 - **Magnifier** - 11x11 neighborhood with color-coded zones
 - **Distance Metrics** - D4 (Manhattan), D8 (Chebyshev), DE (Euclidean)
 - **Histogram** - Real-time comparison (Original vs Processed)
+- **Status Bar** - Real-time statistics (μ mean, σ std dev, H entropy)
 
 ### Visualization Features
 - **Formula Panel** - Live LaTeX rendering with variable tracking
@@ -184,13 +205,20 @@ src/
 │   ├── LaTeXFormula/     # KaTeX wrapper
 │   ├── LoadingSkeleton/  # Loading states
 │   ├── PixelInspector/   # Magnifier + RGB info
-│   └── Sidebar/          # Filter controls
+│   ├── Sidebar/          # Filter controls
+│   └── StatusBar/        # Image statistics display
 ├── hooks/
 │   └── useHistory.ts     # Undo/Redo logic
 ├── utils/
 │   ├── imageFilters.ts   # Point operations
 │   ├── convolution.ts    # Spatial filters
-│   └── morphology.ts     # Binary operations
+│   ├── morphology.ts     # Binary operations
+│   ├── edgeDetection.ts  # Sobel operators
+│   ├── colorFilters.ts   # Color transformations
+│   ├── fft.ts            # Fourier Transform
+│   └── imageStatistics.ts # Mean, variance, entropy
+├── workers/
+│   └── imageWorker.ts    # Background processing
 ├── types/
 │   └── index.ts          # TypeScript definitions
 ├── App.tsx               # Main application
@@ -205,8 +233,10 @@ src/
 - [x] **Sprint 2**: Histogram + Distance metrics
 - [x] **Sprint 3**: Convolution engine
 - [x] **Sprint 4**: Morphological operations
-- [x] **UX**: Zoom/Pan, Undo/Redo, Sample images
-- [x] **Reliability**: Error boundaries, Loading states
+- [x] **Sprint 5**: Edge detection (Sobel) + Color filters
+- [x] **Sprint 6**: FFT Spectrum + Image Statistics
+- [x] **UX**: Zoom/Pan, Undo/Redo, Sample images, Status Bar
+- [x] **Reliability**: Error boundaries, Loading states, Web Worker
 
 ---
 
